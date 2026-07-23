@@ -26,19 +26,18 @@
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "ecd72043-8857-49fa-8faf-522848a63e35",
-        allowLocalhostAsSecureOrigin: true,
-        serviceWorkerPath: "OneSignalSDKWorker.js",
-        serviceWorkerParam: { scope: "./" }, // CORREGIDO: Ajustado al subdirectorio del repositorio
+        serviceWorkerPath: "./OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "./" },
         slidedown: {
           enabled: true,
           autoPrompt: true
         }
       });
 
-      // Listener de cambio de suscripción
+      // Evento al suscribirse con éxito
       OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-        if (event.current.id) {
-          alert("¡Suscripción exitosa en OneSignal! ID: " + event.current.id);
+        if (event.current && event.current.id) {
+          console.log("ID de Suscripción generado:", event.current.id);
           actualizarEstadoNotificaciones(true);
         }
       });
@@ -69,7 +68,7 @@
       bottom: 50px;
     }
 
-    /* BARRA INFERIOR PERMANENTE */
+    /* BARRA INFERIOR DE ACCESO RÁPIDO Y CAMPANA */
     .notification-bar {
       position: fixed;
       bottom: 0;
@@ -142,7 +141,7 @@
 </head>
 <body>
 
-  <!-- IFRAME DE GOOGLE APPS SCRIPT -->
+  <!-- IFRAME CON TU WEBAPP DE APPS SCRIPT -->
   <iframe 
     class="app-frame"
     src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
@@ -150,7 +149,7 @@
     sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation">
   </iframe>
 
-  <!-- BARRA INFERIOR -->
+  <!-- BARRA INFERIOR CON ACTIVADOR PUSH -->
   <div class="notification-bar">
     <span class="text-white small fw-bold">
       <i class="fa-solid fa-shield-halved text-warning me-1"></i> Portal Shopper Pro
@@ -160,7 +159,7 @@
     </button>
   </div>
 
-  <!-- POP-UP INSTALACIÓN PWA -->
+  <!-- MODAL DE INSTALACIÓN SUGERIDA -->
   <div id="pwaModal" class="pwa-overlay">
     <div class="pwa-card">
       <img src="icon-192.png" width="75" height="75" class="rounded-4 mb-3 shadow-sm" alt="Logo">
@@ -180,27 +179,24 @@
   </div>
 
   <script>
+    // SUSCRIPCIÓN A ONESIGNAL
     function solicitarPermisoNotificacion() {
       window.OneSignalDeferred.push(async function(OneSignal) {
         try {
-          const status = OneSignal.Notifications.permission;
-          
-          if (status === false || status === "default") {
-            await OneSignal.Notifications.requestPermission();
-          }
-          
+          await OneSignal.Notifications.requestPermission();
           await OneSignal.User.PushSubscription.optIn();
           
-          const subscriptionId = OneSignal.User.PushSubscription.id;
-          if (subscriptionId) {
-            alert("¡Suscrito con éxito! ID de usuario: " + subscriptionId);
-            actualizarEstadoNotificaciones(true);
-          } else {
-            alert("Procesando suscripción con OneSignal... Presiona OK.");
-          }
+          setTimeout(() => {
+            const subId = OneSignal.User.PushSubscription.id;
+            if (subId) {
+              alert("¡Notificaciones activadas exitosamente!");
+              actualizarEstadoNotificaciones(true);
+            } else {
+              alert("Suscripción en proceso. Presiona nuevamente en 2 segundos.");
+            }
+          }, 1000);
         } catch (e) {
-          alert("Error al intentar suscribir: " + e.message);
-          console.error(e);
+          alert("Error de permiso: " + e.message);
         }
       });
     }
@@ -212,7 +208,7 @@
       if (concedido) {
         btn.classList.add('subscribed');
         lbl.textContent = 'Push Activas';
-        btn.querySelector('i').className = 'fa-solid fa-bell-slash';
+        btn.querySelector('i').className = 'fa-solid fa-check';
       } else {
         btn.classList.remove('subscribed');
         lbl.textContent = 'Activar Push';
@@ -220,7 +216,7 @@
       }
     }
 
-    // PWA Install Prompt
+    // PWA INSTALL LOGIC
     let deferredPrompt = null;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
