@@ -1,105 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Shopper - Autogestión</title>
-  
-  <!-- Configuración de PWA -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#3b82f6">
-
-  <!-- SDK de OneSignal Web Push -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "ecd72043-8857-49fa-8faf-522848a63e35",
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Shopper</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF4400">
+    
+    <!-- OneSignal SDK v16 -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "ecd72043-8857-49fa-8faf-522848a63e35",
+          slidedown: {
+            enabled: true,
+            autoPrompt: true,
+          }
+        });
       });
+    </script>
 
-      // Verificar estado inicial al cargar
-      actualizarEstadoNotificaciones(OneSignal);
-
-      // Escuchar cambios de suscripción en tiempo real
-      OneSignal.User.PushSubscription.addEventListener("change", function() {
-        actualizarEstadoNotificaciones(OneSignal);
-      });
-    });
-
-    async function activarNotificaciones() {
-      window.OneSignalDeferred.push(async function(OneSignal) {
-        try {
-          await OneSignal.Notifications.requestPermission();
-          actualizarEstadoNotificaciones(OneSignal);
-        } catch (error) {
-          console.error("Error al solicitar permiso:", error);
-        }
-      });
-    }
-
-    async function actualizarEstadoNotificaciones(OneSignal) {
-      const isSubscribed = OneSignal.User.PushSubscription.optedIn;
-      const btn = document.getElementById("btn-notif");
-      const statusText = document.getElementById("notif-status");
-
-      if (btn && statusText) {
-        if (isSubscribed) {
-          btn.style.backgroundColor = "#22c55e";
-          btn.innerText = "🔔 Notificaciones Activas";
-          statusText.innerText = "Estado: Recibirás alertas del portal en este dispositivo.";
-          statusText.style.color = "#15803d";
-        } else {
-          btn.style.backgroundColor = "#2563eb";
-          btn.innerText = "🔔 Activar Notificaciones";
-          statusText.innerText = "Estado: Desactivadas. Haz clic para activar.";
-          statusText.style.color = "#b91c1c";
-        }
-      }
-    }
-  </script>
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f3f4f6; color: #1f2937; padding: 20px; display: flex; justify-content: center; }
-    .container { max-width: 500px; width: 100%; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    h1 { font-size: 1.5rem; margin-bottom: 8px; color: #111827; }
-    p { color: #4b5563; font-size: 0.95rem; line-height: 1.4; }
-    .card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: center; }
-    .btn { background-color: #2563eb; color: white; border: none; padding: 12px 20px; font-size: 1rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; width: 100%; }
-    .btn:hover { opacity: 0.9; }
-    .status-info { font-size: 0.85rem; margin-top: 10px; font-weight: 500; }
-    .content-placeholder { border-top: 1px solid #e5e7eb; pt: 15px; margin-top: 15px; }
-  </style>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn { background: #FF4400; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold; }
+        .btn:disabled { background: #ccc; }
+        #status { margin-top: 15px; font-size: 14px; color: #555; }
+    </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Portal Shopper</h1>
-    <p>Bienvenido a tu portal de autogestión. Mantente al día con las últimas novedades.</p>
-
-    <!-- Sección de Notificaciones -->
     <div class="card">
-      <button id="btn-notif" class="btn" onclick="activarNotificaciones()">🔔 Activar Notificaciones</button>
-      <div id="notif-status" class="status-info">Comprobando estado...</div>
+        <h2>Portal Shopper</h2>
+        <p>Mantente al día con las últimas novedades y gestiones.</p>
+        
+        <!-- Botón de tu PWA y lógica de la app -->
+        <button id="btnPWA" class="btn" style="display:none;">Instalar App</button>
+        <div id="status">Cargando aplicación...</div>
     </div>
 
-    <!-- Resto del contenido de tu portal -->
-    <div class="content-placeholder">
-      <h3>Tus Gestiones</h3>
-      <p style="margin-top: 8px;">Aquí puedes integrar los botones o secciones originales de tu plataforma de trabajo.</p>
-    </div>
-  </div>
+    <script>
+        // Registrar Service Worker de la PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(reg => {
+                console.log('SW de PWA registrado con éxito', reg);
+                document.getElementById('status').innerText = 'Portal listo para su uso.';
+            })
+            .catch(err => {
+                console.error('Error al registrar SW:', err);
+                document.getElementById('status').innerText = 'Error al cargar el Service Worker.';
+            });
+        }
 
-  <script>
-    // Registro del Service Worker para la PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker de la PWA registrado correctamente.', reg))
-          .catch(err => console.error('Error registrando Service Worker:', err));
-      });
-    }
-  </script>
+        // Evento para botón de instalación de la PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('btnPWA');
+            btn.style.display = 'block';
+            btn.addEventListener('click', () => {
+                btn.style.display = 'none';
+                deferredPrompt.prompt();
+            });
+        });
+    </script>
 </body>
 </html>
