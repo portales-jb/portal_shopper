@@ -1,72 +1,173 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Shopper</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF4400">
-    
-    <!-- OneSignal SDK v16 -->
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "ecd72043-8857-49fa-8faf-522848a63e35",
-          slidedown: {
-            enabled: true,
-            autoPrompt: true,
-          }
-        });
-      });
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Portal Shopper Pro</title>
 
-    <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; text-align: center; }
-        .card { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn { background: #FF4400; color: white; border: none; padding: 12px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold; }
-        .btn:disabled { background: #ccc; }
-        #status { margin-top: 15px; font-size: 14px; color: #555; }
-    </style>
+  <!-- ARCHIVOS DE CONFIGURACIÓN PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#001f3f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Soy Shopper">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Estilos Modal & Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- ========================================== -->
+  <!--      SDK Y CONFIGURACIÓN DE ONESIGNAL      -->
+  <!-- ========================================== -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "ecd72043-8857-49fa-8faf-522848a63e35",
+        slidedown: {
+          enabled: true,
+          autoPrompt: true, // Solicita permisos automáticamente al entrar
+        }
+      });
+    });
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #001f3f;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .app-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    
+    /* MODAL DE INSTALACIÓN SUGERIDA/FORZADA */
+    .pwa-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 31, 63, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 25px;
+      color: white;
+      text-align: center;
+    }
+    .pwa-card {
+      background: #ffffff;
+      color: #001f3f;
+      border-radius: 28px;
+      padding: 30px 20px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .btn-instalar {
+      background: #F54927;
+      color: white;
+      font-weight: 700;
+      border: none;
+      border-radius: 15px;
+      padding: 14px;
+      width: 100%;
+      font-size: 1rem;
+      box-shadow: 0 8px 20px rgba(245, 73, 39, 0.3);
+    }
+  </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Portal Shopper</h2>
-        <p>Mantente al día con las últimas novedades y gestiones.</p>
-        
-        <!-- Botón de tu PWA y lógica de la app -->
-        <button id="btnPWA" class="btn" style="display:none;">Instalar App</button>
-        <div id="status">Cargando aplicación...</div>
+  <!-- TU WEBAPP DE GOOGLE APPS SCRIPT DENTRO DEL IFRAME CON PERMISOS COMPLETOS -->
+  <iframe 
+    class="app-frame"
+    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
+    allow="camera; microphone; geolocation; autoplay; fullscreen"
+    sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation">
+  </iframe>
+
+  <!-- POP-UP PARA CAPTURAR LA INSTALACIÓN EN MÓVILES -->
+  <div id="pwaModal" class="pwa-overlay">
+    <div class="pwa-card">
+      <img src="icon-192.png" width="75" height="75" class="rounded-4 mb-3 shadow-sm" alt="Logo">
+      <h5 class="fw-bold mb-2">Instala la App Oficial</h5>
+      <p class="text-muted small mb-4">Instala <b>Portal Shopper</b> en tu pantalla de inicio para un acceso rápido y directo.</p>
+      
+      <!-- Botón Android / Chrome -->
+      <button id="btnInstallPWA" class="btn-instalar mb-2" onclick="instalarPWA()">
+        <i class="fa-solid fa-download me-2"></i> INSTALAR AHORA
+      </button>
+
+      <!-- Instrucción si el usuario usa iPhone / Safari -->
+      <div id="iosInstruction" class="d-none alert alert-light border mt-2 small text-start">
+        <i class="fa-solid fa-arrow-up-from-bracket text-primary"></i> Toca <b>Compartir</b> en Safari y selecciona <b>"Agregar a inicio"</b>.
+      </div>
+
+      <button class="btn btn-link text-muted btn-sm text-decoration-none mt-2" onclick="cerrarModalPWA()">Continuar en navegador</button>
     </div>
+  </div>
 
-    <script>
-        // Registrar Service Worker de la PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-            .then(reg => {
-                console.log('SW de PWA registrado con éxito', reg);
-                document.getElementById('status').innerText = 'Portal listo para su uso.';
-            })
-            .catch(err => {
-                console.error('Error al registrar SW:', err);
-                document.getElementById('status').innerText = 'Error al cargar el Service Worker.';
-            });
-        }
+  <script>
+    let deferredPrompt = null;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-        // Evento para botón de instalación de la PWA
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            const btn = document.getElementById('btnPWA');
-            btn.style.display = 'block';
-            btn.addEventListener('click', () => {
-                btn.style.display = 'none';
-                deferredPrompt.prompt();
-            });
+    // Detectar cuando Chrome/Android está listo para instalar
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!isStandalone) {
+        document.getElementById('pwaModal').style.display = 'flex';
+      }
+    });
+
+    // Detectar si el dispositivo es iPhone / iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS && !isStandalone) {
+      setTimeout(() => {
+        document.getElementById('pwaModal').style.display = 'flex';
+        document.getElementById('btnInstallPWA').classList.add('d-none');
+        document.getElementById('iosInstruction').classList.remove('d-none');
+      }, 1500);
+    }
+
+    // Acción del botón Instalar
+    function instalarPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+          cerrarModalPWA();
         });
-    </script>
+      }
+    }
+
+    function cerrarModalPWA() {
+      document.getElementById('pwaModal').style.display = 'none';
+    }
+
+    // Registro del Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
 </body>
 </html>
