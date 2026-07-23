@@ -34,9 +34,16 @@
         }
       });
 
+      // 1. Verificar estado inicial al cargar la página
+      const isSubscribed = OneSignal.User.PushSubscription.optedIn;
+      actualizarEstadoNotificaciones(isSubscribed);
+
+      // 2. Escuchar cambios de estado en tiempo real
       OneSignal.User.PushSubscription.addEventListener("change", function(event) {
-        if (event.current && event.current.id) {
+        if (event.current && event.current.optedIn) {
           actualizarEstadoNotificaciones(true);
+        } else {
+          actualizarEstadoNotificaciones(false);
         }
       });
     });
@@ -95,6 +102,7 @@
       gap: 8px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(245, 73, 39, 0.4);
+      transition: all 0.3s ease;
     }
 
     .btn-bell-push.subscribed {
@@ -182,16 +190,20 @@
     function solicitarPermisoNotificacion() {
       window.OneSignalDeferred.push(async function(OneSignal) {
         try {
+          if (OneSignal.User.PushSubscription.optedIn) {
+            alert("¡Las notificaciones ya están activadas en este dispositivo!");
+            actualizarEstadoNotificaciones(true);
+            return;
+          }
+
           await OneSignal.Notifications.requestPermission();
           await OneSignal.User.PushSubscription.optIn();
           
           setTimeout(() => {
-            const subId = OneSignal.User.PushSubscription.id;
-            if (subId) {
+            const isOptedIn = OneSignal.User.PushSubscription.optedIn;
+            if (isOptedIn) {
               alert("¡Notificaciones activadas exitosamente!");
               actualizarEstadoNotificaciones(true);
-            } else {
-              alert("Suscripción en proceso. Presiona nuevamente en 2 segundos.");
             }
           }, 1000);
         } catch (e) {
@@ -204,14 +216,16 @@
       const btn = document.getElementById('btnPedirNotificaciones');
       const lbl = document.getElementById('lblBtnNotif');
       
+      if (!btn || !lbl) return;
+
       if (concedido) {
         btn.classList.add('subscribed');
         lbl.textContent = 'Push Activas';
-        btn.querySelector('i').className = 'fa-solid fa-check';
+        btn.querySelector('i').className = 'fa-solid fa-check me-1';
       } else {
         btn.classList.remove('subscribed');
         lbl.textContent = 'Activar Push';
-        btn.querySelector('i').className = 'fa-solid fa-bell fa-bounce';
+        btn.querySelector('i').className = 'fa-solid fa-bell fa-bounce me-1';
       }
     }
 
