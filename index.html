@@ -29,10 +29,21 @@
         allowLocalhostAsSecureOrigin: true,
         serviceWorkerPath: "OneSignalSDKWorker.js",
         serviceWorkerParam: { scope: "/" },
+        notifyButton: {
+          enable: true, /* Muestra la campana flotante nativa en la esquina */
+          size: 'medium',
+          theme: 'default',
+          position: 'bottom-right'
+        },
         slidedown: {
           enabled: true,
           autoPrompt: true
         }
+      });
+
+      // Actualizar el estado del botón personalizado según el permiso actual
+      OneSignal.Notifications.addEventListener("permissionChange", function(permission) {
+        actualizarEstadoNotificaciones(permission);
       });
     });
   </script>
@@ -48,16 +59,54 @@
       background-color: #001f3f;
       font-family: system-ui, -apple-system, sans-serif;
     }
+    
+    /* El iframe deja espacio abajo si se muestra la barra inferior */
     .app-frame {
       width: 100%;
-      height: 100%;
+      height: calc(100% - 50px);
       border: none;
       display: block;
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
+      bottom: 50px;
+    }
+
+    /* BARRA INFERIOR CON CAMPANA DE NOTIFICACIONES */
+    .notification-bar {
+      position: fixed;
       bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      background-color: #00152b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      z-index: 9999;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-bell-push {
+      background: #F54927;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(245, 73, 39, 0.4);
+    }
+
+    .btn-bell-push.subscribed {
+      background: #198754;
+      box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
     }
     
     /* MODAL DE INSTALACIÓN SUGERIDA/FORZADA */
@@ -98,13 +147,23 @@
 </head>
 <body>
 
-  <!-- TU WEBAPP DE GOOGLE APPS SCRIPT DENTRO DEL IFRAME CON PERMISOS COMPLETOS -->
+  <!-- TU WEBAPP DE GOOGLE APPS SCRIPT DENTRO DEL IFRAME -->
   <iframe 
     class="app-frame"
     src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
     allow="camera; microphone; geolocation; autoplay; fullscreen"
     sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation">
   </iframe>
+
+  <!-- BARRA INFERIOR PERMANENTE PARA NOTIFICACIONES -->
+  <div class="notification-bar">
+    <span class="text-white small fw-bold">
+      <i class="fa-solid fa-shield-halved text-warning me-1"></i> Portal Shopper Pro
+    </span>
+    <button id="btnPedirNotificaciones" class="btn-bell-push" onclick="solicitarPermisoNotificacion()">
+      <i class="fa-solid fa-bell fa-bounce"></i> <span id="lblBtnNotif">Activar Push</span>
+    </button>
+  </div>
 
   <!-- POP-UP PARA CAPTURAR LA INSTALACIÓN EN MÓVILES -->
   <div id="pwaModal" class="pwa-overlay">
@@ -128,10 +187,47 @@
   </div>
 
   <script>
+    // LÓGICA DE SUSCRIPCIÓN CON BOTÓN / CAMPANA
+    function solicitarPermisoNotificacion() {
+      window.OneSignalDeferred.push(async function(OneSignal) {
+        if (!OneSignal.Notifications.permission) {
+          await OneSignal.Notifications.requestPermission();
+        } else if (OneSignal.Notifications.permission === "granted") {
+          // Si ya tiene permiso pero está desuscrito, lo suscribe explícitamente
+          await OneSignal.User.PushSubscription.optIn();
+          alert("¡Notificaciones activas correctamente!");
+        } else {
+          alert("Las notificaciones están bloqueadas en tu navegador. Debes hacer clic en el candado de la barra de direcciones y elegir 'Permitir'.");
+        }
+      });
+    }
+
+    function actualizarEstadoNotificaciones(concedido) {
+      const btn = document.getElementById('btnPedirNotificaciones');
+      const lbl = document.getElementById('lblBtnNotif');
+      
+      if (concedido || Notification.permission === 'granted') {
+        btn.classList.add('subscribed');
+        lbl.textContent = 'Push Activas';
+        btn.querySelector('i').className = 'fa-solid fa-bell-slash';
+      } else {
+        btn.classList.remove('subscribed');
+        lbl.textContent = 'Activar Push';
+        btn.querySelector('i').className = 'fa-solid fa-bell fa-bounce';
+      }
+    }
+
+    // Revisar estado al cargar
+    window.addEventListener('load', () => {
+      if ('Notification' in window) {
+        actualizarEstadoNotificaciones(Notification.permission === 'granted');
+      }
+    });
+
+    // LÓGICA DE INSTALACIÓN PWA
     let deferredPrompt = null;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-    // Detectar cuando Chrome/Android está listo para instalar
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -140,7 +236,6 @@
       }
     });
 
-    // Detectar si el dispositivo es iPhone / iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isIOS && !isStandalone) {
       setTimeout(() => {
@@ -150,7 +245,6 @@
       }, 1500);
     }
 
-    // Acción del botón Instalar
     function instalarPWA() {
       if (deferredPrompt) {
         deferredPrompt.prompt();
