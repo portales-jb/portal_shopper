@@ -8,7 +8,7 @@
   <!-- ARCHIVOS DE CONFIGURACIÓN PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#001f3f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Soy Shopper">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -28,22 +28,19 @@
         appId: "ecd72043-8857-49fa-8faf-522848a63e35",
         allowLocalhostAsSecureOrigin: true,
         serviceWorkerPath: "OneSignalSDKWorker.js",
-        serviceWorkerParam: { scope: "/" },
-        notifyButton: {
-          enable: true, /* Muestra la campana flotante nativa en la esquina */
-          size: 'medium',
-          theme: 'default',
-          position: 'bottom-right'
-        },
+        serviceWorkerParam: { scope: "./" }, // CORREGIDO: Ajustado al subdirectorio del repositorio
         slidedown: {
           enabled: true,
           autoPrompt: true
         }
       });
 
-      // Actualizar el estado del botón personalizado según el permiso actual
-      OneSignal.Notifications.addEventListener("permissionChange", function(permission) {
-        actualizarEstadoNotificaciones(permission);
+      // Listener de cambio de suscripción
+      OneSignal.User.PushSubscription.addEventListener("change", function(event) {
+        if (event.current.id) {
+          alert("¡Suscripción exitosa en OneSignal! ID: " + event.current.id);
+          actualizarEstadoNotificaciones(true);
+        }
       });
     });
   </script>
@@ -60,7 +57,6 @@
       font-family: system-ui, -apple-system, sans-serif;
     }
     
-    /* El iframe deja espacio abajo si se muestra la barra inferior */
     .app-frame {
       width: 100%;
       height: calc(100% - 50px);
@@ -73,7 +69,7 @@
       bottom: 50px;
     }
 
-    /* BARRA INFERIOR CON CAMPANA DE NOTIFICACIONES */
+    /* BARRA INFERIOR PERMANENTE */
     .notification-bar {
       position: fixed;
       bottom: 0;
@@ -109,7 +105,6 @@
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
     }
     
-    /* MODAL DE INSTALACIÓN SUGERIDA/FORZADA */
     .pwa-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -147,7 +142,7 @@
 </head>
 <body>
 
-  <!-- TU WEBAPP DE GOOGLE APPS SCRIPT DENTRO DEL IFRAME -->
+  <!-- IFRAME DE GOOGLE APPS SCRIPT -->
   <iframe 
     class="app-frame"
     src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
@@ -155,7 +150,7 @@
     sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation">
   </iframe>
 
-  <!-- BARRA INFERIOR PERMANENTE PARA NOTIFICACIONES -->
+  <!-- BARRA INFERIOR -->
   <div class="notification-bar">
     <span class="text-white small fw-bold">
       <i class="fa-solid fa-shield-halved text-warning me-1"></i> Portal Shopper Pro
@@ -165,19 +160,17 @@
     </button>
   </div>
 
-  <!-- POP-UP PARA CAPTURAR LA INSTALACIÓN EN MÓVILES -->
+  <!-- POP-UP INSTALACIÓN PWA -->
   <div id="pwaModal" class="pwa-overlay">
     <div class="pwa-card">
       <img src="icon-192.png" width="75" height="75" class="rounded-4 mb-3 shadow-sm" alt="Logo">
       <h5 class="fw-bold mb-2">Instala la App Oficial</h5>
       <p class="text-muted small mb-4">Instala <b>Portal Shopper</b> en tu pantalla de inicio para un acceso rápido y directo.</p>
       
-      <!-- Botón Android / Chrome -->
       <button id="btnInstallPWA" class="btn-instalar mb-2" onclick="instalarPWA()">
         <i class="fa-solid fa-download me-2"></i> INSTALAR AHORA
       </button>
 
-      <!-- Instrucción si el usuario usa iPhone / Safari -->
       <div id="iosInstruction" class="d-none alert alert-light border mt-2 small text-start">
         <i class="fa-solid fa-arrow-up-from-bracket text-primary"></i> Toca <b>Compartir</b> en Safari y selecciona <b>"Agregar a inicio"</b>.
       </div>
@@ -187,17 +180,27 @@
   </div>
 
   <script>
-    // LÓGICA DE SUSCRIPCIÓN CON BOTÓN / CAMPANA
     function solicitarPermisoNotificacion() {
       window.OneSignalDeferred.push(async function(OneSignal) {
-        if (!OneSignal.Notifications.permission) {
-          await OneSignal.Notifications.requestPermission();
-        } else if (OneSignal.Notifications.permission === "granted") {
-          // Si ya tiene permiso pero está desuscrito, lo suscribe explícitamente
+        try {
+          const status = OneSignal.Notifications.permission;
+          
+          if (status === false || status === "default") {
+            await OneSignal.Notifications.requestPermission();
+          }
+          
           await OneSignal.User.PushSubscription.optIn();
-          alert("¡Notificaciones activas correctamente!");
-        } else {
-          alert("Las notificaciones están bloqueadas en tu navegador. Debes hacer clic en el candado de la barra de direcciones y elegir 'Permitir'.");
+          
+          const subscriptionId = OneSignal.User.PushSubscription.id;
+          if (subscriptionId) {
+            alert("¡Suscrito con éxito! ID de usuario: " + subscriptionId);
+            actualizarEstadoNotificaciones(true);
+          } else {
+            alert("Procesando suscripción con OneSignal... Presiona OK.");
+          }
+        } catch (e) {
+          alert("Error al intentar suscribir: " + e.message);
+          console.error(e);
         }
       });
     }
@@ -206,7 +209,7 @@
       const btn = document.getElementById('btnPedirNotificaciones');
       const lbl = document.getElementById('lblBtnNotif');
       
-      if (concedido || Notification.permission === 'granted') {
+      if (concedido) {
         btn.classList.add('subscribed');
         lbl.textContent = 'Push Activas';
         btn.querySelector('i').className = 'fa-solid fa-bell-slash';
@@ -217,14 +220,7 @@
       }
     }
 
-    // Revisar estado al cargar
-    window.addEventListener('load', () => {
-      if ('Notification' in window) {
-        actualizarEstadoNotificaciones(Notification.permission === 'granted');
-      }
-    });
-
-    // LÓGICA DE INSTALACIÓN PWA
+    // PWA Install Prompt
     let deferredPrompt = null;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
