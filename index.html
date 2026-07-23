@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Portal Shopper Pro</title>
 
-  <!-- CONFIGURACIÓN PWA -->
+  <!-- ARCHIVOS DE CONFIGURACIÓN PWA -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#001f3f">
   <meta name="mobile-web-app-capable" content="yes">
@@ -13,9 +13,9 @@
   <meta name="apple-mobile-web-app-title" content="Soy Shopper">
   <link rel="apple-touch-icon" href="icon-192.png">
 
+  <!-- Estilos Modal & Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <!-- ========================================== -->
   <!--      SDK Y CONFIGURACIÓN DE ONESIGNAL      -->
@@ -26,14 +26,14 @@
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "ecd72043-8857-49fa-8faf-522848a63e35",
-        serviceWorkerPath: "./OneSignalSDKWorker.js",
+        serviceWorkerPath: "/portal_shopper/OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "/portal_shopper/" },
         slidedown: {
           enabled: true,
           autoPrompt: true
         }
       });
 
-      // Listener cuando la suscripción se completa con éxito
       OneSignal.User.PushSubscription.addEventListener("change", function(event) {
         if (event.current && event.current.id) {
           actualizarEstadoNotificaciones(true);
@@ -43,99 +43,30 @@
   </script>
 
   <style>
-    :root { --accent: #F54927; --navy: #001f3f; --bg: #f4f7fa; }
-    body { background: linear-gradient(135deg, #f4f7fa 0%, #e2e8f0 100%); min-height: 100vh; font-family: 'Poppins', sans-serif; color: #1e293b; margin: 0; }
-    .login-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--navy); padding: 20px; }
-    .login-card { background: white; padding: 40px 30px; border-radius: 35px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-    .btn-login { background: var(--accent); border: none; color: white; font-weight: 700; border-radius: 15px; padding: 14px; width: 100% }
-    .pais-select { background: #f8fafc; border-radius: 15px; border: 2px solid #e2e8f0; padding: 12px; margin-bottom: 15px; width: 100%; font-weight: 600; color: var(--navy); text-align: center; }
-    .input-clave-numerica { -webkit-text-security: disc !important; font-size: 1.4rem !important; letter-spacing: 4px; }
-    .input-clave-numerica::placeholder { font-size: 1rem !important; letter-spacing: normal !important; font-family: 'Poppins', sans-serif; opacity: 0.65; }
-    #mainApp { display: none; padding-bottom: 110px; max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.4); box-shadow: 0 0 30px rgba(0,0,0,0.03); min-height: 100vh; }
-    .header-premium { background: var(--navy); padding: 35px 25px 55px; color: white; border-radius: 0 0 40px 40px; }
-    .header-admin { background: #1e293b !important; }
-    .badge-corte { background: var(--accent); color: white; padding: 6px 16px; border-radius: 50px; font-size: 0.7rem; margin-top: 10px; display: inline-block; font-weight: 600; }
-    .app-section { padding: 20px; display: none; }
-    .active-section { display: block; animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-    .card-metric { background: white; border-radius: 22px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; border: 1px solid rgba(255,255,255,0.7); }
-    .card-full { grid-column: span 2; text-align: left; padding: 22px; }
-    .m-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .m-value { font-size: 1.3rem; font-weight: 700; color: var(--navy); }
-    .tab-bar { position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 1200px; height: 75px; background: rgba(255,255,255,0.98); backdrop-filter: blur(10px); display: flex; justify-content: space-around; border-top: 1px solid #e2e8f0; z-index: 1000; padding-bottom: 5px; }
-    .tab-btn { background: none; border: none; color: #94a3b8; font-size: 0.75rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
-    .tab-btn.active { color: var(--accent); }
-    .tab-btn i { font-size: 1.6rem; margin-bottom: 4px; }
-    .bono-card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-    .day-card { background: white; border-radius: 20px; padding: 18px; margin-bottom: 12px; border-left: 5px solid var(--accent); cursor: pointer; }
-    .btn-close-custom { background: var(--navy); color: white !important; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; }
-    .search-box { background: white; border-radius: 15px; padding: 12px 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; display: flex; align-items: center; }
-    .search-box input { border: none; outline: none; width: 100%; margin-left: 10px; font-size: 0.85rem; }
-    .toast-custom { visibility: hidden; min-width: 250px; background-color: #2e7d32; color: #fff; text-align: center; border-radius: 12px; padding: 14px; position: fixed; z-index: 9999; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 0.85rem; font-weight: 600; box-shadow: 0px 8px 20px rgba(0,0,0,0.2); }
-    .toast-custom.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,31,63,0.85); backdrop-filter: blur(5px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.3s ease; }
-    .modal-content-custom { background: white; border-radius: 25px; padding: 30px 25px; text-align: center; max-width: 380px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
-    .avatar-container { width: 65px; height: 65px; border-radius: 50%; overflow: hidden; border: 2px solid white; background: #e2e8f0; display: flex; align-items: center; justify-content: center; position: relative; }
-    .avatar-img-real { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-    .avatar-iniciales { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white; font-weight: 700; font-size: 1.2rem; border-radius: 50%; }
-    .contenedor-scroll-asistencia { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border-left: 5px solid var(--navy); display: flex; flex-direction: column; }
-    .marco-foto-segura { width: 100%; height: 150px; border-radius: 12px; border: 1px solid #e2e8f0; background: #111; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .img-segura-mobile { width: 100%; height: 100%; object-fit: contain !important; opacity: 1; cursor: pointer; }
-    @media (min-width: 768px) { .marco-foto-segura { height: 240px !important; } }
-    .texto-turno-coordinador { white-space: normal !important; word-wrap: break-word !important; font-size: 0.72rem !important; line-height: 1.2; font-weight: 600; color: #475569; text-align: right; max-width: 50%; }
-    .txt-fecha-humana { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 8px; background: rgba(255,255,255,0.15); display: inline-block; padding: 4px 12px; border-radius: 50px; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #001f3f;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
     
-    .btn-entrada-vibrante { background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important; color: white !important; font-weight: 700 !important; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35) !important; border: none !important; }
-    .btn-salida-vibrante { background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%) !important; color: white !important; font-weight: 700 !important; box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35) !important; border: none !important; }
-    .card-kpi-asistencia { background: white; border-radius: 18px; padding: 12px; text-align: center; border: 1px solid #e2e8f0; }
-    .btn-refresh-admin { background: #001f3f; color: white; border-radius: 12px; border: none; padding: 6px 14px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0, 31, 63, 0.2); transition: all 0.2s ease; }
-    .btn-refresh-admin:active { transform: scale(0.95); }
-
-    .badge-reportado-si {
-      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-      color: #ffffff;
-      padding: 8px 16px;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .badge-reportado-no {
-      background: #f1f5f9;
-      color: #64748b;
-      padding: 6px 14px;
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      border: 1px solid #cbd5e1;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .badge-inhabilidad-tag {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: #ffffff !important;
-      padding: 6px 12px;
-      border-radius: 50px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-decoration: none !important;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-      transition: transform 0.2s ease;
-    }
-    .badge-inhabilidad-tag:active {
-      transform: scale(0.95);
+    .app-frame {
+      width: 100%;
+      height: calc(100% - 50px);
+      border: none;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 50px;
     }
 
-    /* BARRA INFERIOR DE NOTIFICACIONES PUSH */
+    /* BARRA INFERIOR DE ACTIVACIÓN PUSH */
     .notification-bar {
       position: fixed;
       bottom: 0;
@@ -170,7 +101,8 @@
       background: #198754;
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
     }
-
+    
+    /* MODAL INSTALACIÓN PWA */
     .pwa-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -208,193 +140,15 @@
 </head>
 <body>
 
-  <!-- INPUTS NATIVOS DE CAPTURA DIRECTA -->
-  <input type="file" id="inputCamaraDirectaPerfil" accept="image/*" capture="user" style="display:none;" onchange="procesarFotoConCompresionDirecta(this, 'PERFIL')">
-  <input type="file" id="inputCamaraDirectaAsistencia" accept="image/*" capture="user" style="display:none;" onchange="procesarFotoConCompresionDirecta(this, 'ASISTENCIA')">
+  <!-- TU WEBAPP DE GOOGLE APPS SCRIPT DENTRO DEL IFRAME -->
+  <iframe 
+    class="app-frame"
+    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
+    allow="camera; microphone; geolocation; autoplay; fullscreen"
+    sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation">
+  </iframe>
 
-  <div id="loginSection" class="login-container">
-    <div class="login-card">
-      <i class="fa-solid fa-user-shield fa-4x mb-3 text-accent" style="color: var(--accent);"></i>
-      <h3 class="fw-bold mb-4">Portal Latam</h3>
-      <select id="paisInput" class="pais-select" onchange="actualizarTextosLoginPorPais()">
-        <option value="" disabled selected>🌍 Tu país / Seu país</option>
-        <option value="CO">Colombia</option>
-        <option value="BR">Brasil</option>
-        <option value="MX">México</option>
-        <option value="AR">Argentina</option>
-        <option value="PE">Perú</option>
-        <option value="EC">Ecuador</option>
-      </select>
-      <input type="tel" inputmode="numeric" id="idInput" class="form-control mb-3 rounded-pill text-center py-3 bg-light border-0" placeholder="ID Usuario">
-      <input type="tel" inputmode="numeric" id="passInput" class="form-control mb-4 rounded-pill text-center py-3 bg-light border-0 input-clave-numerica" placeholder="Clave">
-      <button class="btn-login shadow-lg" id="btnLogin" onclick="validar()">INGRESAR</button>
-      <div id="errorBox" class="text-danger mt-3 small fw-bold"></div>
-    </div>
-  </div>
-
-  <div id="mainApp">
-    <div id="mainHeader" class="header-premium">
-      <div class="d-flex justify-content-between align-items-start">
-        <div class="d-flex align-items-center gap-3">
-          <div class="avatar-container" id="boxAvatarHeader"><i class="fa-solid fa-user text-muted fa-lg"></i></div>
-          <div><small class="opacity-75" id="lblHola">Hola,</small><h2 id="nombreUser" class="fw-bold m-0" style="font-size:1.3rem;">---</h2><div id="weekDisplay" class="badge-corte">Corte: --/--/--</div></div>
-        </div>
-        <button class="btn text-white p-0" onclick="logout()"><i class="fa-solid fa-power-off fa-lg"></i></button>
-      </div>
-    </div>
-
-    <div id="sec-admin" class="app-section">
-      <h5 class="fw-bold mb-1" id="titleGestion">Gestión de Avales</h5>
-      <p class="text-muted small mb-3">Otorga permisos de ingreso extemporáneo a tu equipo.</p>
-      <div class="search-box shadow-sm"><i class="fa-solid fa-magnifying-glass text-muted"></i><input type="text" id="adminSearch" placeholder="Buscar por nombre o ID..." onkeyup="filterGestion()"></div>
-      <div class="card p-0 rounded-4 border-0 shadow-sm mb-4" style="overflow: hidden;"><div class="table-responsive"><table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;"><tbody id="gestionTableBody"></tbody></table></div></div>
-      <h6 class="fw-bold text-accent small mb-3 mt-4" id="titleBuzon">Buzón de Soporte (Global)</h6><div id="buzonAdmin" class="d-flex flex-column gap-2 mb-4"></div>
-      <h6 class="fw-bold text-accent small mb-3">Logs de Acceso</h6><div class="card p-3 rounded-4 border-0 shadow-sm"><div id="logsList" style="max-height: 250px; overflow-y: auto; font-size: 0.65rem;"></div></div>
-    </div>
-
-    <div id="sec-ingresos" class="app-section">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <h5 class="fw-bold m-0" id="titleIngresos">Ingresos de Asistencia</h5>
-        <button class="btn-refresh-admin" id="btnRefreshIngresos" onclick="refrescarIngresosAdmin()">
-          <i class="fa-solid fa-rotate-right me-1" id="iconRefreshAdmin"></i> Actualizar
-        </button>
-      </div>
-      <p class="text-muted small mb-3" id="subIngresos">Auditoría continua de ingresos.</p>
-      
-      <div class="row g-2 mb-3" id="boxKpiResumenAdmin">
-         <div class="col-4">
-           <div class="card-kpi-asistencia">
-             <small class="m-label d-block text-muted">Programados</small>
-             <b id="kpiProgramados" class="text-navy fs-5">0</b>
-           </div>
-         </div>
-         <div class="col-4" onclick="cambiarVistaAsistenciaAdmin('INGRESADOS')" style="cursor:pointer;">
-           <div class="card-kpi-asistencia border-success-subtle">
-             <small class="m-label d-block text-success">Ingresaron</small>
-             <b id="kpiIngresados" class="text-success fs-5">0</b>
-           </div>
-         </div>
-         <div class="col-4" onclick="cambiarVistaAsistenciaAdmin('PENDIENTES')" style="cursor:pointer;">
-           <div class="card-kpi-asistencia border-danger-subtle bg-danger-subtle">
-             <small class="m-label d-block text-danger">Faltan hoy</small>
-             <b id="kpiFaltas" class="text-danger fs-5">0</b>
-           </div>
-         </div>
-      </div>
-
-      <div class="row g-2 mb-3">
-         <div class="col-6">
-            <input type="date" id="filtroFechaAdmin" class="form-control rounded-3 border-0 bg-white p-2 shadow-sm small fw-bold text-navy" onchange="cambiarFechaIngresosAdmin()">
-         </div>
-         <div class="col-6">
-            <select id="filtroTiendaAdmin" class="form-select rounded-3 border-0 bg-white p-2 shadow-sm small fw-bold text-navy" onchange="aplicarFiltroTiendaAdmin()">
-               <option value="TODAS">🛒 Todas las Tiendas</option>
-            </select>
-         </div>
-      </div>
-
-      <div class="d-flex gap-2 mb-3">
-        <button id="btnTabIngresados" class="btn btn-sm btn-dark flex-fill rounded-pill fw-bold py-2" onclick="cambiarVistaAsistenciaAdmin('INGRESADOS')">
-          <i class="fa-solid fa-user-check me-1"></i> Ingresaron (<span id="countIngresadosTab">0</span>)
-        </button>
-        <button id="btnTabPendientes" class="btn btn-sm btn-outline-danger flex-fill rounded-pill fw-bold py-2" onclick="cambiarVistaAsistenciaAdmin('PENDIENTES')">
-          <i class="fa-solid fa-user-clock me-1"></i> Pendientes (<span id="countPendientesTab">0</span>)
-        </button>
-      </div>
-
-      <div id="boxAdminModuloDesactivado" class="alert alert-warning d-none text-center rounded-3 shadow-sm small py-3"><i class="fa-solid fa-ban me-1"></i> El módulo de asistencia está desactivado.</div>
-      <div id="contenedorListaIngresosScroll" class="d-flex flex-column gap-3"></div>
-      <div id="contenedorListaPendientesScroll" class="d-flex flex-column gap-3 d-none"></div>
-    </div>
-
-    <div id="sec-metricas" class="app-section">
-      <div id="contenedorGeneralAsistenciaShopper" class="d-none mb-4">
-        <div id="cardModuloPerfilFaltante" class="day-card py-3 px-3 border-0 shadow-sm bg-white mb-3 d-none">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2" style="max-width: 65%;"><i class="fa-solid fa-camera text-danger fa-lg"></i><span class="fw-bold text-dark" style="font-size: 0.75rem;" id="lblPerfilFaltante">Llena tu foto de perfil inicial</span></div>
-            <button id="btnSubirPerfilRapido" class="btn btn-sm btn-danger rounded-pill fw-bold" style="font-size:0.65rem; padding: 5px 12px;" onclick="activarCapturaPerfilDirecta()">TOMAR</button>
-          </div>
-        </div>
-        <div class="card p-3 rounded-4 border-0 shadow-sm bg-navy text-white">
-          <div class="d-flex align-items-center gap-2 mb-2"><i class="fa-solid fa-calendar-day text-accent"></i><span class="m-label text-white opacity-75" style="letter-spacing: 1px;" id="lblControlAsistencia">Control de Asistencia</span></div>
-          <div id="txtFechaAsistenciaHoy" class="txt-fecha-humana">---</div>
-          <div id="boxContextoTurnoHoy" style="font-size: 0.8rem; font-weight: 300;" class="mb-3 opacity-90"><i class="fa-solid fa-spinner fa-spin me-1"></i> Buscando programación...</div>
-          <div id="alertaBloqueoFaltaPerfil" class="alert alert-warning text-dark p-2 rounded-3 mb-0 small d-none" style="font-size:0.68rem; font-weight:600;"><i class="fa-solid fa-triangle-exclamation text-danger me-1"></i> Requiere foto de perfil inicial arriba.</div>
-          <div id="boxAlertaBloqueoTardio" class="alert alert-danger text-dark p-3 rounded-3 mb-2 small d-none" style="font-size:0.75rem; font-weight:600; background:#fee2e2; border-left:5px solid #ef4444;">
-             <i class="fa-solid fa-circle-xmark text-danger me-1 fa-lg"></i> Ingreso Bloqueado por llegar más de 30 min tarde. Requiere aval de tu coordinador.
-          </div>
-          <button id="btnMarcajeDiario" class="btn w-100 fw-bold py-2 rounded-3 d-none" style="font-size: 0.8rem;" onclick="activarCapturaAsistenciaDirecta()"></button>
-        </div>
-      </div>
-
-      <div class="metric-grid">
-        <div class="card-metric card-full p-3 text-start text-muted" style="border-left: 4px solid #94a3b8; margin-top:0;">
-          <div class="fw-bold mb-1" style="font-size: 0.7rem;" id="lblGlosarioHeader"><i class="fa-solid fa-circle-info text-accent"></i> Glosario:</div>
-          <div class="mb-1" style="font-size: 0.65rem;" id="lblGlosarioText1"><b>Calidad (DR):</b> Ticket de los clientes | <b>Fulfillment:</b> Porcentaje encontrado</div>
-          <div style="font-size: 0.65rem;" id="lblGlosarioText2"><b>Slot %:</b> Pagadas a tiempo | <b>Cancel %:</b> Canceladas | <b>Pesables:</b> Calidad en frescos</div>
-        </div>
-        <div class="card-metric card-full" style="border-left: 6px solid var(--accent);">
-          <div class="d-flex justify-content-between align-items-center" onclick="toggleDefect()" style="cursor: pointer;">
-            <div><div class="m-label" id="lblOrders">Órdenes</div><div class="m-value" id="valOrders" style="font-size:2rem">0</div></div>
-            <div class="text-end"><div class="m-label" id="lblDefect">Calidad (DR)</div><div class="m-value text-danger" id="valDefect">0%</div><div id="badgeAlert" class="badge bg-danger mt-1 d-none"><i class="fa-solid fa-hand-pointer"></i> <span id="lblVerMotivos">Ver Motivos</span></div></div>
-          </div>
-          <div id="defectDetails" class="d-none mt-3 p-3 rounded-4 shadow-sm" style="background: linear-gradient(to right, #fff1f2, #ffe4e6); border: 1px solid #fecdd3;">
-            <h6 class="fw-bold text-danger mb-2" style="font-size: 0.85rem;" id="lblDetalleInhabilidades"><i class="fa-solid fa-triangle-exclamation"></i> Detalle de Inhabilidades</h6><div id="defectItemsList" class="mb-3"></div>
-            <div id="boxOrdenes" class="p-2 bg-white rounded-3 shadow-sm border border-danger-subtle" style="font-size:0.65rem"><strong id="lblOrdenesAfectadas">Órdenes afectadas:</strong> <span id="valOrdenesRel" class="text-dark fw-bold"></span></div>
-          </div>
-        </div>
-        <div class="card-metric"><div class="m-label" id="lblFull">Fulfillment</div><div class="m-value" id="valFull">0%</div></div>
-        <div class="card-metric"><div class="m-label" id="lblSlot">Slot %</div><div class="m-value" id="valSlot">0%</div></div>
-        <div class="card-metric"><div class="m-label" id="lblCanRate">Cancel %</div><div class="m-value" id="valCanRate">0%</div></div>
-        <div class="card-metric"><div class="m-label" id="lblPesable">Pesables</div><div class="m-value" id="valPesable">0%</div></div>
-      </div>
-    </div>
-
-    <div id="sec-inicio" class="app-section">
-      <h6 class="fw-bold mb-4 px-2 text-uppercase" id="lblPanelAdminTitle">Mi Panel Administrativo</h6>
-      <div class="row g-3 text-center">
-        <div class="col-6" id="col-dudas"><div class="day-card py-3 d-flex flex-column align-items-center justify-content-center gap-1 border-0 shadow-sm" onclick="showSub('sugerencias')"><i class="fa-solid fa-envelope-open-text text-accent fa-lg mb-1"></i> <b style="font-size: 0.8rem;" id="lblNuevaDuda">Nueva Duda</b></div></div>
-        <div class="col-6" id="col-consultas"><div class="day-card py-3 d-flex flex-column align-items-center justify-content-center gap-1 border-0 shadow-sm" onclick="showSub('misconsultas')"><i class="fa-solid fa-inbox text-accent fa-lg mb-1"></i> <b style="font-size: 0.8rem;" id="lblMisConsultas">Mis Consultas</b></div></div>
-        <div class="col-6" id="col-historial"><div class="day-card py-4" onclick="showSub('evolucion')"><i class="fa-solid fa-clock-rotate-left fa-2x text-accent mb-2"></i><br><small class="fw-bold" id="lblHistorial">Historial</small></div></div>
-        <div class="col-6" id="col-bonos"><div class="day-card py-4" onclick="showSub('bonos')"><i class="fa-solid fa-sack-dollar fa-2x text-accent mb-2"></i><br><small class="fw-bold" id="lblBonos">Bonos</small></div></div>
-        <div class="col-6" id="col-horarios"><div class="day-card py-4" onclick="showSub('horarios')"><i class="fa-solid fa-calendar-check fa-2x text-accent mb-2"></i><br><small class="fw-bold" id="lblTurnos">Turnos</small></div></div>
-        <div class="col-6" id="col-guias"><div class="day-card py-4" onclick="showSub('recursos')"><i class="fa-solid fa-graduation-cap fa-2x text-accent mb-2"></i><br><small class="fw-bold" id="lblGuias">Guías</small></div></div>
-      </div>
-
-      <div id="sub-evolucion" class="d-none mt-4 border-top pt-4"><div class="d-flex justify-content-between mb-3"><b id="lblSubHistorial">Mi Histórico</b><button class="btn-close-custom" onclick="hideSubs()"><i class="fa-solid fa-xmark"></i></button></div><div id="evolucionBody"></div></div>
-      <div id="sub-bonos" class="d-none mt-4 border-top pt-4"><div class="d-flex justify-content-between mb-3"><b id="lblSubBonos">Bonos</b><button class="btn-close-custom" onclick="hideSubs()"><i class="fa-solid fa-xmark"></i></button></div><div id="bonosContainer"></div></div>
-      
-      <div id="sub-horarios" class="d-none mt-4 border-top pt-4">
-        <div class="d-flex justify-content-between mb-3"><b id="lblSubTurnos">Turnos</b><button class="btn-close-custom" onclick="hideSubs()"><i class="fa-solid fa-xmark"></i></button></div>
-        
-        <div class="alert alert-warning text-dark border-warning-subtle rounded-4 p-3 mb-3 shadow-sm d-flex align-items-center gap-2" style="font-size: 0.75rem; font-weight: 500;">
-          <i class="fa-solid fa-triangle-exclamation text-warning-emphasis fa-lg flex-shrink-0"></i>
-          <div id="lblAvisoHorarios">
-            Cualquier cambio sobre la semana no se verá reflejado acá y deberá ser confirmado por el coordinador.
-          </div>
-        </div>
-
-        <div id="agendaContainer"></div>
-      </div>
-
-      <div id="sub-recursos" class="d-none mt-4 border-top pt-4"><div class="d-flex justify-content-between mb-3"><b id="lblSubGuias">Recursos</b><button class="btn-close-custom" onclick="hideSubs()"><i class="fa-solid fa-xmark"></i></button></div><div id="recursosContainer"></div></div>
-      <div id="sub-misconsultas" class="d-none mt-4 border-top pt-4"><div class="d-flex justify-content-between mb-3"><b id="lblSubMisConsultas">Mis Consultas</b><button class="btn-close-custom" onclick="hideSubs()"><i class="fa-solid fa-xmark"></i></button></div><div id="misConsultasContainer"></div></div>
-      <div id="sub-sugerencias" class="d-none mt-4 border-top pt-4">
-        <div class="d-flex justify-content-between mb-3"><b id="lblBuzonAyuda">Buzón de Ayuda</b><button class="btn-close-custom" onclick="hideSubs()"><i class="fa-solid fa-xmark"></i></button></div>
-        <textarea id="txtSugerencia" class="form-control mb-3 rounded-3 border-0 bg-white p-3 shadow-sm" rows="3" placeholder="Escribe tu mensaje..."></textarea>
-        <button id="btnSendSug" class="btn-login py-2 shadow-sm w-100" onclick="enviarSugerenciaUI()">ENVIAR MENSAJE</button>
-      </div>
-    </div>
-
-    <div class="tab-bar" id="navBar">
-      <button id="btn-metricas" class="tab-btn active" onclick="changeTab('metricas')"><i class="fa-solid fa-chart-line"></i><span id="navMetricas">Métricas</span></button>
-      <button id="btn-inicio" class="tab-btn" onclick="changeTab('inicio')"><i class="fa-solid fa-grip"></i><span id="navPanel">Panel</span></button>
-      <button id="btn-admin" class="tab-btn d-none" onclick="changeTab('admin')"><i class="fa-solid fa-users-gear"></i><span id="navEquipo">Equipo</span></button>
-      <button id="btn-ingresos" class="tab-btn d-none" onclick="changeTab('ingresos')"><i class="fa-solid fa-user-check"></i><span id="navIngresos">Ingresos Hoy</span></button>
-    </div>
-  </div>
-
-  <!-- BARRA INFERIOR DE ACTIVACIÓN NOTIFICACIONES PUSH -->
+  <!-- BARRA INFERIOR -->
   <div class="notification-bar">
     <span class="text-white small fw-bold">
       <i class="fa-solid fa-shield-halved text-warning me-1"></i> Portal Shopper Pro
@@ -404,17 +158,7 @@
     </button>
   </div>
 
-  <div id="toastNotif" class="toast-custom"></div>
-  <div id="modalAnuncio" class="modal-overlay">
-    <div class="modal-content-custom">
-      <i class="fa-solid fa-bullhorn icon-anuncio"></i>
-      <h4 class="fw-bold mb-2" id="lblAnuncioTitulo">¡Novedades!</h4>
-      <div id="txtAnuncioModal" class="text-muted mb-4" style="font-size:0.85rem;"></div>
-      <button class="btn-login" id="btnEntendidoModal" onclick="cerrarAnuncio()">¡Entendido!</button>
-    </div>
-  </div>
-
-  <!-- MODAL DE INSTALACIÓN SUGERIDA -->
+  <!-- POP-UP PARA INSTALACIÓN -->
   <div id="pwaModal" class="pwa-overlay">
     <div class="pwa-card">
       <img src="icon-192.png" width="75" height="75" class="rounded-4 mb-3 shadow-sm" alt="Logo">
@@ -433,719 +177,8 @@
     </div>
   </div>
 
-<script>
-    var globalUser = null, fotoPerfilUrl = "", configAsistenciaPais = false, textoTurnoFormateado = "Sin programación", cacheIngresosHoyAdmin = [], cachePendientesAdmin = [];
-    var currentMarcajeTipo = "ENTRADA", cacheAvalesAdmin = {}, yaTieneAvalDeHoy = false, IDIOMA_ACTUAL = "ES", totalProgramadosAdmin = 0;
-    var estadoAsistenciaBackend = { hizoEntrada: false, hizoSalida: false }, vistaActualAsistencia = "INGRESADOS";
-
-    var TRADUCCIONES = {
-      "ES": {
-        loginBtn: "INGRESAR",
-        loginIdPlaceholder: "ID Usuario",
-        loginPassPlaceholder: "Clave",
-        hola: "Hola,",
-        corte: "Corte:",
-        titleGestion: "Gestión de Avales",
-        titleBuzon: "Buzón de Soporte (Global)",
-        titleIngresos: "Ingresos de Asistencia",
-        subIngresos: "Auditoría continua de ingresos.",
-        todasLojas: "🛒 Todas las Tiendas",
-        asistenciaDesactivada: "El módulo de asistencia está desactivado.",
-        glosarioTitle: "Glosario:",
-        glosario1: "<b>Calidad (DR):</b> Ticket de los clientes | <b>Fulfillment:</b> Porcentaje encontrado",
-        glosario2: "<b>Slot %:</b> Pagadas a tiempo | <b>Cancel %:</b> Canceladas | <b>Pesables:</b> Calidad en frescos",
-        orders: "Órdenes",
-        defect: "Calidad (DR)",
-        verMotivos: "Ver Motivos",
-        detalleInhabilidades: "Detalle de Inhabilidades",
-        ordenesAfectadas: "Órdenes afectadas:",
-        full: "Fulfillment",
-        slot: "Slot %",
-        canRate: "Cancel %",
-        pesable: "Pesables",
-        panelAdminTitle: "Mi Panel Administrativo",
-        nuevaDuda: "Nueva Duda",
-        misConsultas: "Mis Consultas",
-        historial: "Historial",
-        bonos: "Bonos",
-        turnos: "Turnos",
-        guias: "Guías",
-        perfilFaltante: "Llena tu foto de perfil inicial",
-        btnTomar: "TOMAR",
-        controlAsistencia: "Control de Asistencia",
-        ingresarMensaje: "Escribe tu mensaje...",
-        btnEnviar: "ENVIAR MENSAJE",
-        navMetricas: "Métricas",
-        navPanel: "Panel",
-        navEquipo: "Equipo",
-        navIngresos: "Ingresos Hoy",
-        btnEntendido: "¡Entendido!",
-        anuncioTitulo: "¡Novedades!",
-        diasSemana: ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"],
-        meses: ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"],
-        txtControlDia: "Control del Día:",
-        lblPausa: "Pausa:",
-        avisoHorarios: "Cualquier cambio sobre la semana no se verá reflejado acá y deberá ser confirmado por el coordinador."
-      },
-      "PT": {
-        loginBtn: "ENTRAR",
-        loginIdPlaceholder: "ID Usuário",
-        loginPassPlaceholder: "Senha",
-        hola: "Olá,",
-        corte: "Corte:",
-        titleGestion: "Gestão de Avais",
-        titleBuzon: "Caixa de Suporte (Global)",
-        titleIngresos: "Entradas de Presença",
-        subIngresos: "Auditoria contínua de entradas.",
-        todasLojas: "🛒 Todas as Lojas",
-        asistenciaDesactivada: "O módulo de presença está desativado.",
-        glosarioTitle: "Glossário:",
-        glosario1: "<b>Qualidade (DR):</b> Ticket dos clientes | <b>Fulfillment:</b> Porcentagem encontrada",
-        glosario2: "<b>Slot %:</b> Entregues no prazo | <b>Cancel %:</b> Canceladas | <b>Pesaíveis:</b> Qualidade em frescos",
-        orders: "Pedidos",
-        defect: "Qualidade (DR)",
-        verMotivos: "Ver Motivos",
-        detalleInhabilidades: "Detalhe de Inabilidade",
-        ordenesAfectadas: "Pedidos afetados:",
-        full: "Fulfillment",
-        slot: "Slot %",
-        canRate: "Cancel %",
-        pesable: "Pesaíveis",
-        panelAdminTitle: "Meu Painel Administrativo",
-        nuevaDuda: "Nova Dúvida",
-        misConsultas: "Minhas Consultas",
-        historial: "Histórico",
-        bonos: "Bônus",
-        turnos: "Escalas",
-        guias: "Guias",
-        perfilFaltante: "Tire sua foto de perfil inicial",
-        btnTomar: "TIRAR FOTO",
-        controlAsistencia: "Controle de Presença",
-        ingresarMensaje: "Escreva sua mensagem...",
-        btnEnviar: "ENVIAR MENSAGEM",
-        navMetricas: "Métricas",
-        navPanel: "Painel",
-        navEquipo: "Equipe",
-        navIngresos: "Entradas Hoje",
-        btnEntendido: "Entendido!",
-        anuncioTitulo: "Novidades!",
-        diasSemana: ["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"],
-        meses: ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"],
-        txtControlDia: "Controle do Dia:",
-        lblPausa: "Pausa:",
-        avisoHorarios: "Cualquer alteração ou ajuste durante a semana não será refletido aqui e deverá ser confirmado diretamente com o seu coordenador."
-      }
-    };
-
-    function t(key) {
-      return (TRADUCCIONES[IDIOMA_ACTUAL] && TRADUCCIONES[IDIOMA_ACTUAL][key]) ? TRADUCCIONES[IDIOMA_ACTUAL][key] : (TRADUCCIONES["ES"][key] || "");
-    }
-
-    function actualizarTextosLoginPorPais() {
-      var pais = document.getElementById('paisInput').value;
-      IDIOMA_ACTUAL = (pais === "BR") ? "PT" : "ES";
-      document.getElementById('btnLogin').innerText = t('loginBtn');
-      document.getElementById('idInput').placeholder = t('loginIdPlaceholder');
-      document.getElementById('passInput').placeholder = t('loginPassPlaceholder');
-    }
-
-    function aplicarTraduccionGeneralUI() {
-      document.getElementById('lblHola').innerText = t('hola');
-      document.getElementById('titleGestion').innerText = t('titleGestion');
-      document.getElementById('titleBuzon').innerText = t('titleBuzon');
-      document.getElementById('titleIngresos').innerText = t('titleIngresos');
-      document.getElementById('subIngresos').innerText = t('subIngresos');
-      document.getElementById('lblGlosarioHeader').innerHTML = `<i class="fa-solid fa-circle-info text-accent"></i> ${t('glosarioTitle')}`;
-      document.getElementById('lblGlosarioText1').innerHTML = t('glosario1');
-      document.getElementById('lblGlosarioText2').innerHTML = t('glosario2');
-      document.getElementById('lblOrders').innerText = t('orders');
-      document.getElementById('lblDefect').innerText = t('defect');
-      document.getElementById('lblVerMotivos').innerText = t('verMotivos');
-      document.getElementById('lblDetalleInhabilidades').innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${t('detalleInhabilidades')}`;
-      document.getElementById('lblOrdenesAfectadas').innerText = t('ordenesAfectadas');
-      document.getElementById('lblFull').innerText = t('full');
-      document.getElementById('lblSlot').innerText = t('slot');
-      document.getElementById('lblCanRate').innerText = t('canRate');
-      document.getElementById('lblPesable').innerText = t('pesable');
-      document.getElementById('lblPanelAdminTitle').innerText = t('panelAdminTitle');
-      document.getElementById('lblNuevaDuda').innerText = t('nuevaDuda');
-      document.getElementById('lblMisConsultas').innerText = t('misConsultas');
-      document.getElementById('lblHistorial').innerText = t('historial');
-      document.getElementById('lblBonos').innerText = t('bonos');
-      document.getElementById('lblTurnos').innerText = t('turnos');
-      document.getElementById('lblGuias').innerText = t('guias');
-      document.getElementById('lblSubHistorial').innerText = t('historial');
-      document.getElementById('lblSubBonos').innerText = t('bonos');
-      document.getElementById('lblSubTurnos').innerText = t('turnos');
-      document.getElementById('lblSubGuias').innerText = t('guias');
-      document.getElementById('lblSubMisConsultas').innerText = t('misConsultas');
-      document.getElementById('lblBuzonAyuda').innerText = t('nuevaDuda');
-      document.getElementById('txtSugerencia').placeholder = t('ingresarMensaje');
-      document.getElementById('btnSendSug').innerText = t('btnEnviar');
-      document.getElementById('navMetricas').innerText = t('navMetricas');
-      document.getElementById('navPanel').innerText = t('navPanel');
-      document.getElementById('navEquipo').innerText = t('navEquipo');
-      document.getElementById('navIngresos').innerText = t('navIngresos');
-      document.getElementById('btnEntendidoModal').innerText = t('btnEntendido');
-      document.getElementById('lblAnuncioTitulo').innerText = t('anuncioTitulo');
-      document.getElementById('lblPerfilFaltante').innerText = t('perfilFaltante');
-      document.getElementById('btnSubirPerfilRapido').innerText = t('btnTomar');
-      document.getElementById('lblControlAsistencia').innerText = t('controlAsistencia');
-      document.getElementById('lblAvisoHorarios').innerText = t('avisoHorarios');
-    }
-
-    function inicializarFechaHumanaAsistencia() {
-      var f = new Date();
-      var d = t('diasSemana'), m = t('meses');
-      document.getElementById('txtFechaAsistenciaHoy').innerHTML = `<i class="fa-regular fa-clock me-1"></i> ${t('txtControlDia')} <b>${d[f.getDay()]} ${f.getDate()} de ${m[f.getMonth()]}</b>`;
-    }
-
-    function cargarImagenViaProxy(elementId, driveUrl) {
-      var elem = document.getElementById(elementId);
-      if(!elem || !driveUrl || driveUrl.indexOf("No registrada") !== -1) return;
-      
-      google.script.run.withSuccessHandler(function(res) {
-        if(res && res.success && res.dataUri) {
-          elem.src = res.dataUri;
-          elem.style.display = 'block';
-        }
-      }).obtenerImagenBase64Proxy(driveUrl);
-    }
-
-    function renderizarAvatarHeader(urlRaw, nombreUser) {
-      var box = document.getElementById('boxAvatarHeader');
-      var iniciales = (nombreUser || "US").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
-      
-      if(!urlRaw || urlRaw.indexOf("No registrada") !== -1) {
-        box.innerHTML = `<div class="avatar-iniciales">${iniciales}</div>`;
-        return;
-      }
-      
-      var imgId = "imgAvatarHeaderReal";
-      box.innerHTML = `<img id="${imgId}" class="avatar-img-real" style="display:none;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-iniciales\\'>${iniciales}</div>';">`;
-      cargarImagenViaProxy(imgId, urlRaw);
-    }
-
-    function activarCapturaPerfilDirecta() {
-      var input = document.getElementById('inputCamaraDirectaPerfil');
-      input.value = '';
-      input.click();
-    }
-
-    function activarCapturaAsistenciaDirecta() {
-      var input = document.getElementById('inputCamaraDirectaAsistencia');
-      input.value = '';
-      input.click();
-    }
-
-    function procesarFotoConCompresionDirecta(inputElem, tipo) {
-      if (!inputElem.files || !inputElem.files[0]) return;
-      var file = inputElem.files[0];
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var img = new Image();
-        img.onload = function() {
-          var canvas = document.createElement('canvas');
-          var maxDim = 600;
-          var width = img.width;
-          var height = img.height;
-
-          if (width > height) {
-            if (width > maxDim) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            }
-          } else {
-            if (height > maxDim) {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          var ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          var base64Data = canvas.toDataURL('image/jpeg', 0.50);
-
-          if (tipo === 'PERFIL') {
-            ejecutarSubidaFotoPerfil(base64Data);
-          } else if (tipo === 'ASISTENCIA') {
-            ejecutarSubidaAsistenciaDiaria(base64Data);
-          }
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function logout() { 
-      document.getElementById('mainApp').style.display = 'none'; document.getElementById('loginSection').style.display = 'flex';
-      document.getElementById('idInput').value = ''; document.getElementById('passInput').value = ''; document.getElementById('errorBox').innerText = '';
-      document.getElementById('paisInput').selectedIndex = 0; document.getElementById('btnLogin').disabled = false;
-      actualizarTextosLoginPorPais();
-      globalUser = null; fotoPerfilUrl = ""; configAsistenciaPais = false; document.getElementById('boxAvatarHeader').innerHTML = '<i class="fa-solid fa-user text-muted fa-lg"></i>';
-      hideSubs(); window.scrollTo(0,0);
-    }
-
-    function validar() {
-      var id = document.getElementById('idInput').value.trim(), pass = document.getElementById('passInput').value.trim(), pais = document.getElementById('paisInput').value;
-      if(!pais) { document.getElementById('errorBox').innerText = "⚠️ Selecciona tu país."; return; }
-      if(!id || !pass) { document.getElementById('errorBox').innerText = "⚠️ Ingresa tu ID y Clave."; return; }
-      var btn = document.getElementById('btnLogin'); btn.disabled = true; btn.innerText = "...";
-      google.script.run.withSuccessHandler(function(res) {
-        if(res.success) { 
-          globalUser = res.user; 
-          IDIOMA_ACTUAL = res.idioma || "ES"; 
-          fotoPerfilUrl = res.fotoPerfilUrl || ""; 
-          configAsistenciaPais = res.configAsistenciaPais || false; 
-          yaTieneAvalDeHoy = res.tieneAval || false; 
-          cacheAvalesAdmin = res.avalesOtorgados || {}; 
-          totalProgramadosAdmin = res.totalProgramadosHoy || 0; 
-          estadoAsistenciaBackend = res.estadoAsistenciaHoy || { hizoEntrada: false, hizoSalida: false };
-          document.getElementById('loginSection').style.display='none'; 
-          document.getElementById('mainApp').style.display='block'; 
-          poblarApp(res); 
-        }
-        else { document.getElementById('errorBox').innerText = res.message; btn.disabled = false; btn.innerText = t('loginBtn'); }
-      }).withFailureHandler(function() { document.getElementById('errorBox').innerText = "❌ Error crítico."; btn.disabled = false; btn.innerText = t('loginBtn'); }).validarAcceso(id, pass, pais);
-    }
-    
-    function poblarApp(res) {
-      aplicarTraduccionGeneralUI();
-      document.getElementById('nombreUser').innerText = res.user.nombre || "Shopper";
-      var header = document.getElementById('mainHeader'), nav = document.getElementById('navBar');
-      
-      if(configAsistenciaPais && !res.isAdmin) {
-         document.getElementById('contenedorGeneralAsistenciaShopper').classList.remove('d-none');
-         inicializarFechaHumanaAsistencia();
-      } else {
-         document.getElementById('contenedorGeneralAsistenciaShopper').classList.add('d-none');
-      }
-      
-      if(configAsistenciaPais && fotoPerfilUrl) {
-        renderizarAvatarHeader(fotoPerfilUrl, res.user.nombre);
-        document.getElementById('cardModuloPerfilFaltante').classList.add('d-none');
-      } else {
-        renderizarAvatarHeader("", res.user.nombre);
-        if(configAsistenciaPais && !res.isAdmin) document.getElementById('cardModuloPerfilFaltante').classList.remove('d-none');
-      }
-      
-      if(res.isAdmin) {
-        header.classList.add('header-admin');
-        ['btn-metricas','btn-inicio'].forEach(id => document.getElementById(id).classList.add('d-none'));
-        
-        document.getElementById('btn-admin').classList.remove('d-none');
-        if (configAsistenciaPais) {
-          document.getElementById('btn-ingresos').classList.remove('d-none');
-        } else {
-          document.getElementById('btn-ingresos').classList.add('d-none');
-        }
-
-        changeTab('admin');
-        
-        document.getElementById('gestionTableBody').innerHTML = (res.listaGestion || []).map(s => {
-            var yaAvalado = cacheAvalesAdmin[s.id] === "OTORGADO";
-            var btnAval = "";
-            if (!configAsistenciaPais) {
-              btnAval = `<span class="badge bg-light text-muted border">Sin Módulo</span>`;
-            } else if (yaAvalado) {
-              btnAval = `<button class="btn btn-sm btn-success rounded-pill fw-bold w-100" style="font-size:0.7rem; padding:6px 12px;" disabled><i class="fa-solid fa-check me-1"></i> Avalado</button>`;
-            } else {
-              btnAval = `<button id="btnA-${s.id}" class="btn btn-sm btn-outline-danger rounded-pill fw-bold w-100" style="font-size:0.7rem; padding:6px 12px;" onclick="darAvalShopperSrv('${s.id}')"><i class="fa-solid fa-key me-1"></i> Dar Aval</button>`;
-            }
-            return `<tr><td class="ps-3 py-3"><b>${s.nom}</b><br><small class="text-muted">ID: ${s.id}</small></td><td class="text-end pe-3" style="width:130px;">${btnAval}</td></tr>`;
-        }).join('');
-
-        document.getElementById('logsList').innerHTML = (res.logs || []).map(l => `<div class="mb-1">${l.fecha} - <b>${l.nombre}</b></div>`).join('<hr class="my-1">');
-        renderBuzon(res.sugerencias);
-        
-        if(configAsistenciaPais) {
-          document.getElementById('boxAdminModuloDesactivado').classList.add('d-none');
-          
-          var hoyInputStr = new Date().toISOString().split('T')[0];
-          document.getElementById('filtroFechaAdmin').value = hoyInputStr;
-
-          cacheIngresosHoyAdmin = res.ingresosHoyAdmin || [];
-          cachePendientesAdmin = res.pendientesHoyAdmin || [];
-          
-          procesarRespuestaAsistenciaAdmin({ success: true, ingresados: cacheIngresosHoyAdmin, pendientes: cachePendientesAdmin });
-        } else { 
-          document.getElementById('boxAdminModuloDesactivado').innerText = t('asistenciaDesactivada');
-          document.getElementById('boxAdminModuloDesactivado').classList.remove('d-none'); 
-          document.getElementById('contenedorListaIngresosScroll').style.display = 'none'; 
-          document.getElementById('contenedorListaPendientesScroll').style.display = 'none';
-        }
-      } else {
-        header.classList.remove('header-admin');
-        ['btn-metricas','btn-inicio'].forEach(id => document.getElementById(id).classList.remove('d-none')); ['btn-admin','btn-ingresos'].forEach(id => document.getElementById(id).classList.add('d-none'));
-        changeTab('metricas');
-        var m = res.config.modulos || {};
-        document.getElementById('col-dudas').style.display = m.dudas ? 'block' : 'none'; document.getElementById('col-consultas').style.display = m.consultas ? 'block' : 'none'; document.getElementById('col-historial').style.display = m.historial ? 'block' : 'none'; document.getElementById('col-bonos').style.display = m.bonos ? 'block' : 'none'; document.getElementById('col-horarios').style.display = m.horarios ? 'block' : 'none'; document.getElementById('col-guias').style.display = m.guias ? 'block' : 'none';
-        document.getElementById('weekDisplay').innerText = t('corte') + " " + (res.semanaActualTxt || "--");
-        
-        ['Orders','Defect','Full','Slot','CanRate','Pesable'].forEach(f => {
-          var key = f.toLowerCase();
-          document.getElementById('val'+f).innerText = (res.stats[key] !== undefined ? res.stats[key] : '0') + (f==='Orders'?'':'%');
-        });
-        
-        document.getElementById('valOrdenesRel').innerText = res.ordenesRelacionadas || "Ninguna";
-        var dList = document.getElementById('defectItemsList'); dList.innerHTML = ""; var dD = res.defectDetails || {}, dK = Object.keys(dD);
-        if (dK.length > 0) {
-          ['badgeAlert','defectDetails'].forEach(id => document.getElementById(id).classList.remove('d-none'));
-          dK.forEach(k => { dList.innerHTML += `<div class="bg-white p-2 rounded-3 shadow-sm mb-2 border-start border-danger border-3"><div class="fw-bold text-danger mb-1" style="font-size:0.75rem">${k}:</div><div class="text-dark" style="font-size:0.7rem">${(dD[k] || []).join(", ")}</div></div>`; });
-        } else { ['badgeAlert','defectDetails'].forEach(id => document.getElementById(id).classList.add('d-none')); }
-        
-        document.getElementById('evolucionBody').innerHTML = (res.evolucion || []).map(e => `
-          <div class="day-card p-3 mb-3 border-0 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-              <div class="fw-bold text-navy" style="font-size: 0.85rem;"><i class="fa-regular fa-calendar text-accent me-1"></i> Corte: ${e.fecha}</div>
-              <div class="badge bg-light text-dark border" style="font-size: 0.65rem;">${e.orders} Órdenes</div>
-            </div>
-            <div class="row g-2 text-center mt-1" style="font-size: 0.7rem;">
-              <div class="col-4 mb-2"><b>DR</b><br><span class="text-danger fw-bold">${e.defect}%</span></div>
-              <div class="col-4 mb-2"><b>FF</b><br><span class="text-success fw-bold">${e.full}%</span></div>
-              <div class="col-4 mb-2"><b>Slot</b><br><span>${e.slot}%</span></div>
-              <div class="col-4"><b>Cancel</b><br><span>${e.canrate}%</span></div>
-              <div class="col-4"><b>Pesables</b><br><span>${e.pesable}%</span></div>
-              <div class="col-4"><b>Órdenes</b><br><span>${e.orders}</span></div>
-            </div>
-          </div>`).join('');
-        
-        var cC = document.getElementById('misConsultasContainer');
-        if(res.misSugerencias && res.misSugerencias.length > 0) {
-            cC.innerHTML = res.misSugerencias.map(c => `<div class="card p-3 rounded-4 border-0 shadow-sm mb-3"><div class="d-flex justify-content-between mb-2"><small class="text-muted" style="font-size:0.6rem">${c.fecha}</small><span class="badge ${c.estado==='RESUELTO'?'bg-success':'bg-warning text-dark'}" style="font-size:0.55rem">${c.estado}</span></div><div style="font-size:0.75rem;" class="mb-2"><b>Tú:</b> ${c.msj}</div>${c.estado==='RESUELTO'?`<div style="font-size:0.75rem; background:#f0fdf4; border-left:3px solid #22c55e; padding:8px; border-radius:4px;"><b>Soporte:</b> ${c.respuesta}</div>`:''}</div>`).join('');
-        } else cC.innerHTML = "<p class='text-center text-muted small mt-2'>Sin consultas.</p>";
-
-        google.script.run.withSuccessHandler(function(extra) {
-            if(!extra) return; 
-            var box = document.getElementById('boxContextoTurnoHoy'), btn = document.getElementById('btnMarcajeDiario'), al = document.getElementById('alertaBloqueoFaltaPerfil');
-            
-            document.getElementById('bonosContainer').innerHTML = (extra.bonos || []).map(b => {
-              var esSi = (b.reportado || "").toString().trim().toUpperCase() === "SI";
-              var badgeReportadoHTML = esSi 
-                ? `<span class="badge-reportado-si"><i class="fa-solid fa-circle-check"></i> Reportado</span>`
-                : `<span class="badge-reportado-no"><i class="fa-solid fa-clock"></i> Pendiente</span>`;
-
-              var tagInhabilidadHTML = "";
-              if (b.tieneInhabilidad && b.link) {
-                tagInhabilidadHTML = `<a href="${b.link}" target="_blank" class="badge-inhabilidad-tag"><i class="fa-solid fa-file-circle-exclamation"></i> Inhabilidades</a>`;
-              }
-
-              return `
-                <div class="bono-card shadow-sm p-3 mb-3 bg-white rounded-4">
-                  <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                    <div><span class="m-label d-block text-muted">Semana</span><b class="text-navy">${b.semana}</b></div>
-                    <div class="text-end"><span class="m-label d-block text-muted">Monto</span><b class="text-success" style="font-size:1.2rem">${b.bonoMonto}</b></div>
-                  </div>
-                  <div class="row g-1 text-center small mb-3">
-                    ${(b.detalles || []).map(d => `<div class="col-4"><div class="p-1 rounded fw-bold" style="background:${d.color || '#f1f5f9'}; font-size:0.65rem;">${d.label}: ${d.val}</div></div>`).join('')}
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                    <div>${tagInhabilidadHTML || `<span class="text-muted" style="font-size:0.72rem;"><b>Utilidad:</b> ${b.utilidad}</span>`}</div>
-                    <div>${badgeReportadoHTML}</div>
-                  </div>
-                </div>`;
-            }).join('') || "<p class='text-center text-muted small py-3'>Sin registros.</p>";
-
-            document.getElementById('agendaContainer').innerHTML = (extra.agenda || []).map(i => `
-              <div class="day-card">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <small class="text-muted fw-bold">${i.fecha}</small>
-                  ${i.duracion ? `<span class="badge bg-light text-navy border" style="font-size:0.65rem;"><i class="fa-regular fa-clock me-1"></i>${i.duracion}</span>` : ''}
-                </div>
-                <div class="fw-bold text-navy" style="font-size:0.9rem;">${i.turno}</div>
-                <div class="d-flex justify-content-between align-items-center mt-1">
-                  <div class="small text-muted"><i class="fa-solid fa-store me-1"></i>${i.tienda}</div>
-                  ${i.pausa ? `<div class="badge bg-warning-subtle text-dark border border-warning fw-bold" style="font-size:0.72rem;"><i class="fa-solid fa-mug-hot me-1 text-warning"></i>${t('lblPausa')} ${i.pausa}</div>` : ''}
-                </div>
-              </div>`).join('') || "<p class='text-center text-muted small py-3'>Sin turnos / Sem escalas.</p>";
-
-            document.getElementById('recursosContainer').innerHTML = (extra.recursos || []).map(r => `<a href="${r.url}" target="_blank" class="text-decoration-none"><div class="day-card"><div class="fw-bold text-dark"><i class="fa-solid fa-link text-accent"></i> ${r.titulo}</div></div></a>`).join('') || "<p class='text-center text-muted small'>Sin guías.</p>";
-
-            if (configAsistenciaPais) {
-              var tUpper = extra.turnoHoy && extra.turnoHoy.turno ? extra.turnoHoy.turno.toUpperCase() : "";
-              var tieneTurnoActivoValido = extra.turnoHoy && tUpper.indexOf("VACACIONES") === -1 && tUpper.indexOf("DESCANSO") === -1 && tUpper.indexOf("FOLGA") === -1;
-
-              if (tieneTurnoActivoValido) { 
-                textoTurnoFormateado = extra.turnoHoy.turno + " (" + extra.turnoHoy.tienda + ")"; 
-                box.innerHTML = `<div>Hoy tienes asignado: <b>${extra.turnoHoy.turno}</b> en <b>${extra.turnoHoy.tienda}</b>.</div>`; 
-                
-                var partsHora = extra.turnoHoy.turno.split("-")[0].trim().split(":");
-                var bloqueadoPorTiempo = false;
-                if (partsHora.length >= 2) {
-                   var ahora = new Date();
-                   var horaTurno = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), parseInt(partsHora[0]), parseInt(partsHora[1]), 0);
-                   var limiteTardio = new Date(horaTurno.getTime() + (30 * 60 * 1000));
-                   if (ahora > limiteTardio) bloqueadoPorTiempo = true;
-                }
-
-                if(fotoPerfilUrl) { 
-                  btn.classList.remove('d-none'); al.classList.add('d-none'); 
-                  
-                  if (!estadoAsistenciaBackend.hizoEntrada) {
-                     currentMarcajeTipo = "ENTRADA";
-                     btn.innerHTML = `<i class="fa-solid fa-camera me-2"></i>REGISTRAR ENTRADA [${extra.turnoHoy.turno}] en ${extra.turnoHoy.tienda}`;
-                     btn.className = "btn w-100 btn-entrada-vibrante py-3 rounded-3";
-                     if (bloqueadoPorTiempo && !yaTieneAvalDeHoy) {
-                        btn.disabled = true; btn.className = "btn btn-secondary w-100 fw-bold text-white py-2 rounded-3 opacity-50";
-                        document.getElementById('boxAlertaBloqueoTardio').classList.remove('d-none');
-                     } else { document.getElementById('boxAlertaBloqueoTardio').classList.add('d-none'); btn.disabled = false; }
-                  } else if (estadoAsistenciaBackend.hizoEntrada && !estadoAsistenciaBackend.hizoSalida) {
-                     currentMarcajeTipo = "SALIDA"; btn.disabled = false;
-                     document.getElementById('boxAlertaBloqueoTardio').classList.add('d-none');
-                     btn.innerHTML = `<i class="fa-solid fa-sign-out-alt me-2"></i>REGISTRAR SALIDA [${extra.turnoHoy.turno}] en ${extra.turnoHoy.tienda}`;
-                     btn.className = "btn w-100 btn-salida-vibrante py-3 rounded-3";
-                  } else {
-                     document.getElementById('boxAlertaBloqueoTardio').classList.add('d-none'); btn.disabled = true;
-                     btn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>Jornada Completa Registrada';
-                     btn.className = "btn btn-success w-100 fw-bold disabled py-2 rounded-3";
-                  }
-                } else { btn.classList.add('d-none'); al.classList.remove('d-none'); } 
-              } else { 
-                textoTurnoFormateado = extra.turnoHoy && extra.turnoHoy.turno ? extra.turnoHoy.turno : "Sin Turno"; 
-                box.innerHTML = `<div class="text-warning fw-bold"><i class="fa-solid fa-mug-hot me-1"></i> Hoy no tienes turnos asignados (${textoTurnoFormateado}).</div>`; 
-                btn.classList.add('d-none'); al.classList.add('d-none'); document.getElementById('boxAlertaBloqueoTardio').classList.add('d-none');
-              }
-            }
-        }).cargarDataExtra(res.user.id, res.user.pais);
-      }
-      if (!res.isAdmin && res.config && res.config.mostrarAnuncio) { document.getElementById('txtAnuncioModal').innerHTML = res.config.textoAnuncio; document.getElementById('modalAnuncio').style.display = 'flex'; }
-    }
-
-    function darAvalShopperSrv(shopperId) {
-       var btn = document.getElementById('btnA-'+shopperId); 
-       var btnPen = document.getElementById('btnAPen-'+shopperId);
-       
-       if(btn) { btn.disabled = true; btn.innerText = "..."; }
-       if(btnPen) { btnPen.disabled = true; btnPen.innerText = "..."; }
-
-       google.script.run.withSuccessHandler(function(r){
-          if(r.success) { 
-            cacheAvalesAdmin[shopperId] = "OTORGADO";
-            if(btn) { btn.className = "btn btn-sm btn-success rounded-pill fw-bold w-100"; btn.innerHTML = `<i class="fa-solid fa-check me-1"></i> Avalado`; }
-            if(btnPen) { btnPen.parentElement.innerHTML = `<span class="badge bg-success p-2 rounded-pill"><i class="fa-solid fa-check me-1"></i> Avalado</span>`; }
-            showToast("🔑 Aval otorgado con éxito"); 
-          }
-       }).otorgarAvalAdmin(shopperId, globalUser.pais);
-    }
-
-    function cambiarVistaAsistenciaAdmin(vista) {
-      vistaActualAsistencia = vista;
-      var btnIng = document.getElementById('btnTabIngresados');
-      var btnPen = document.getElementById('btnTabPendientes');
-      var contIng = document.getElementById('contenedorListaIngresosScroll');
-      var contPen = document.getElementById('contenedorListaPendientesScroll');
-
-      if (vista === "INGRESADOS") {
-        btnIng.className = "btn btn-sm btn-dark flex-fill rounded-pill fw-bold py-2";
-        btnPen.className = "btn btn-sm btn-outline-danger flex-fill rounded-pill fw-bold py-2";
-        contIng.classList.remove('d-none');
-        contPen.classList.add('d-none');
-      } else {
-        btnIng.className = "btn btn-sm btn-outline-dark flex-fill rounded-pill fw-bold py-2";
-        btnPen.className = "btn btn-sm btn-danger flex-fill rounded-pill fw-bold py-2";
-        contIng.classList.add('d-none');
-        contPen.classList.remove('d-none');
-      }
-    }
-
-    function refrescarIngresosAdmin() {
-       var icon = document.getElementById('iconRefreshAdmin');
-       if(icon) icon.classList.add('fa-spin');
-       
-       var valFecha = document.getElementById('filtroFechaAdmin').value;
-       if (!valFecha) {
-          valFecha = new Date().toISOString().split('T')[0];
-          document.getElementById('filtroFechaAdmin').value = valFecha;
-       }
-       var parts = valFecha.split('-');
-       var fechaYmd = parts[0] + parts[1] + parts[2];
-
-       google.script.run.withSuccessHandler(function(res){
-          if(icon) icon.classList.remove('fa-spin');
-          if(res.success) {
-             procesarRespuestaAsistenciaAdmin(res);
-             showToast("🔄 Datos de asistencia actualizados");
-          }
-       }).withFailureHandler(function(){
-          if(icon) icon.classList.remove('fa-spin');
-          showToast("❌ Error al refrescar");
-       }).consultarIngresosFechaAdmin(globalUser.pais, fechaYmd);
-    }
-
-    function cambiarFechaIngresosAdmin() {
-       var valFecha = document.getElementById('filtroFechaAdmin').value;
-       if (!valFecha) return;
-       var parts = valFecha.split('-');
-       var fechaYmd = parts[0] + parts[1] + parts[2];
-       
-       var contIng = document.getElementById('contenedorListaIngresosScroll');
-       var contPen = document.getElementById('contenedorListaPendientesScroll');
-       contIng.innerHTML = "<div class='text-center text-muted small py-4'><i class='fa-solid fa-circle-notch fa-spin fa-2x me-2 text-accent'></i> Buscando datos...</div>";
-       contPen.innerHTML = "<div class='text-center text-muted small py-4'><i class='fa-solid fa-circle-notch fa-spin fa-2x me-2 text-accent'></i> Buscando datos...</div>";
-
-       google.script.run.withSuccessHandler(function(res){
-          if(res.success) {
-             procesarRespuestaAsistenciaAdmin(res);
-          }
-       }).consultarIngresosFechaAdmin(globalUser.pais, fechaYmd);
-    }
-
-    function procesarRespuestaAsistenciaAdmin(res) {
-      if (res.success) {
-        cacheIngresosHoyAdmin = res.ingresados || [];
-        cachePendientesAdmin = res.pendientes || [];
-        
-        var totalProg = cacheIngresosHoyAdmin.length + cachePendientesAdmin.length;
-        document.getElementById('kpiProgramados').innerText = totalProg;
-        document.getElementById('kpiIngresados').innerText = cacheIngresosHoyAdmin.length;
-        document.getElementById('kpiFaltas').innerText = cachePendientesAdmin.length;
-        
-        document.getElementById('countIngresadosTab').innerText = cacheIngresosHoyAdmin.length;
-        document.getElementById('countPendientesTab').innerText = cachePendientesAdmin.length;
-        
-        var selectTienda = document.getElementById('filtroTiendaAdmin');
-        var tiendaSeleccionadaPrev = selectTienda.value;
-        
-        var todasTiendas = [...cacheIngresosHoyAdmin.map(i => i.tienda), ...cachePendientesAdmin.map(p => p.tienda)];
-        var tiendasUnicas = [...new Set(todasTiendas.filter(t => t))];
-        
-        selectTienda.innerHTML = `<option value="TODAS">${t('todasLojas')}</option>`;
-        tiendasUnicas.sort().forEach(t => { selectTienda.innerHTML += `<option value="${t}">${t}</option>`; });
-        
-        if (tiendasUnicas.includes(tiendaSeleccionadaPrev)) {
-          selectTienda.value = tiendaSeleccionadaPrev;
-        }
-        
-        aplicarFiltroTiendaAdmin();
-      }
-    }
-
-    function aplicarFiltroTiendaAdmin() {
-      var valorTienda = document.getElementById('filtroTiendaAdmin').value;
-      if (valorTienda === "TODAS") {
-        renderizarListaAsistenciaAdmin(cacheIngresosHoyAdmin);
-        renderizarListaPendientesAdmin(cachePendientesAdmin);
-      } else {
-        renderizarListaAsistenciaAdmin(cacheIngresosHoyAdmin.filter(item => item.tienda === valorTienda));
-        renderizarListaPendientesAdmin(cachePendientesAdmin.filter(item => item.tienda === valorTienda));
-      }
-    }
-
-    function renderizarListaAsistenciaAdmin(lista) {
-      var contenedor = document.getElementById('contenedorListaIngresosScroll');
-      if(lista && lista.length > 0) {
-         contenedor.innerHTML = lista.map((i, index) => {
-            var idP = "imgPerfil_" + index;
-            var idA = "imgAsist_" + index;
-            var idS = "imgSalida_" + index;
-
-            var p = `<div class="marco-foto-segura"><img id="${idP}" class="img-segura-mobile" style="display:none;" onclick="window.open('${i.linkPerfil}','_blank')"></div>`;
-            var a = `<div class="marco-foto-segura"><img id="${idA}" class="img-segura-mobile" style="display:none;" onclick="window.open('${i.linkAsistencia}','_blank')"></div>`;
-            var s = i.linkFinTurno ? `<div class="marco-foto-segura"><img id="${idS}" class="img-segura-mobile" style="display:none;" onclick="window.open('${i.linkFinTurno}','_blank')"></div>` : `<div class="marco-foto-segura text-muted small fst-italic bg-light text-dark"><i class="fa-solid fa-hourglass-start opacity-40 mb-1 d-block fa-lg"></i>Pendiente Salida</div>`;
-
-            setTimeout(function() {
-               if(i.linkPerfil) cargarImagenViaProxy(idP, i.linkPerfil);
-               if(i.linkAsistencia) cargarImagenViaProxy(idA, i.linkAsistencia);
-               if(i.linkFinTurno) cargarImagenViaProxy(idS, i.linkFinTurno);
-            }, index * 100);
-
-            return `<div class="contenedor-scroll-asistencia"><div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2"><div><h6 class="fw-bold text-navy m-0" style="font-size:0.85rem;">${i.nombre}</h6><small class="text-muted">ID: ${i.id} | In: <b>${i.fechaHora}</b> ${i.horaFin ? `| Out: <b>${i.horaFin}</b>` : ''}</small></div><span class="texto-turno-coordinador">${i.turnoInfo}</span></div><div class="row g-2"><div class="col-4 text-center"><small class="m-label d-block text-muted mb-1">Perfil</small>${p}</div><div class="col-4 text-center"><small class="m-label d-block text-danger mb-1">Ingreso</small>${a}</div><div class="col-4 text-center"><small class="m-label d-block text-warning mb-1">Salida</small>${s}</div></div></div>`;
-         }).join('');
-      } else contenedor.innerHTML = `<div class='text-center text-muted small py-4 bg-white rounded-4 shadow-sm fst-italic'>Sin registros de ingreso para esta selección.</div>`;
-    }
-
-    function renderizarListaPendientesAdmin(lista) {
-      var contenedor = document.getElementById('contenedorListaPendientesScroll');
-      if (lista && lista.length > 0) {
-        contenedor.innerHTML = lista.map((p, index) => {
-          var imgId = "imgPendPerfil_" + index;
-          var yaAvalado = cacheAvalesAdmin[p.id] === "OTORGADO";
-          
-          var btnAval = "";
-          if (yaAvalado) {
-            btnAval = `<span class="badge bg-success p-2 rounded-pill"><i class="fa-solid fa-check me-1"></i> Avalado</span>`;
-          } else {
-            btnAval = `<button id="btnAPen-${p.id}" class="btn btn-sm btn-outline-danger rounded-pill fw-bold" style="font-size:0.7rem; padding:5px 12px;" onclick="darAvalShopperSrv('${p.id}')"><i class="fa-solid fa-key me-1"></i> Dar Aval</button>`;
-          }
-
-          var iniciales = (p.nombre || "US").split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
-
-          setTimeout(function() {
-            if (p.linkPerfil) cargarImagenViaProxy(imgId, p.linkPerfil);
-          }, index * 80);
-
-          return `
-            <div class="card p-3 rounded-4 border-0 shadow-sm border-start border-danger border-4">
-              <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-3">
-                  <div class="avatar-container" style="width:48px; height:48px;">
-                    ${p.linkPerfil ? `<img id="${imgId}" class="avatar-img-real" style="display:none;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-iniciales\\'>${iniciales}</div>';">` : `<div class="avatar-iniciales">${iniciales}</div>`}
-                  </div>
-                  <div>
-                    <h6 class="fw-bold text-navy mb-0" style="font-size:0.85rem;">${p.nombre}</h6>
-                    <small class="text-muted d-block" style="font-size:0.7rem;">ID: ${p.id} | <i class="fa-solid fa-store me-1"></i>${p.tienda}</small>
-                    <small class="text-danger fw-bold" style="font-size:0.7rem;"><i class="fa-regular fa-clock me-1"></i>Turno: ${p.turno}</small>
-                  </div>
-                </div>
-                <div>
-                  ${btnAval}
-                </div>
-              </div>
-            </div>`;
-        }).join('');
-      } else {
-        contenedor.innerHTML = `<div class='text-center text-success small py-4 bg-white rounded-4 shadow-sm fw-bold'><i class="fa-solid fa-circle-check fa-2x d-block mb-2 text-success"></i>¡Excelente! Todos los shoppers programados registraron ingreso.</div>`;
-      }
-    }
-
-    function ejecutarSubidaFotoPerfil(base64Compreso) {
-      var btn = document.getElementById('btnSubirPerfilRapido'); btn.disabled = true; btn.innerText = "...";
-      google.script.run.withSuccessHandler(function(r) {
-        btn.disabled = false; if(r.success) { fotoPerfilUrl = r.url; logout(); showToast("✅ Foto configurada. Reingresa"); }
-        else { showToast("❌ Error"); btn.innerText = t('btnTomar'); }
-      }).guardarFotoPerfilFija(globalUser.id, globalUser.pais, base64Compreso);
-    }
-
-    function ejecutarSubidaAsistenciaDiaria(base64Compreso) {
-      var btn = document.getElementById('btnMarcajeDiario'); var tipoCargadoActual = currentMarcajeTipo; btn.disabled = true; 
-      if (tipoCargadoActual === "ENTRADA") {
-         btn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>ENTRADA REGISTRADA'; btn.className = "btn btn-success w-100 fw-bold disabled py-2 rounded-3"; showToast("✅ Entrada registrada con éxito");
-         estadoAsistenciaBackend.hizoEntrada = true;
-      } else {
-         btn.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>JORNADA COMPLETA'; btn.className = "btn btn-success w-100 fw-bold disabled py-2 rounded-3"; showToast("✅ Salida registrada con éxito");
-         estadoAsistenciaBackend.hizoSalida = true;
-      }
-      google.script.run.withSuccessHandler(function(resSrv) { console.log("Sincronización instantánea finalizada."); }).registrarAsistenciaDiaria(globalUser.id, globalUser.nombre, globalUser.pais, textoTurnoFormateado, base64Compreso, tipoCargadoActual);
-    }
-
-    function cerrarAnuncio() { document.getElementById('modalAnuncio').style.display = 'none'; }
-    function showToast(msg) { var t = document.getElementById("toastNotif"); t.innerText = msg; t.className = "toast-custom show"; setTimeout(function(){ t.className = "toast-custom"; }, 3000); }
-    function enviarSugerenciaUI() {
-      var msj = document.getElementById('txtSugerencia').value.trim(); if (!msj) return; var btn = document.getElementById('btnSendSug'); btn.disabled = true; btn.innerText = "...";
-      google.script.run.withSuccessHandler(function() { showToast("✅ Enviado"); document.getElementById('txtSugerencia').value = ""; btn.disabled = false; btn.innerText = t('btnEnviar'); hideSubs(); }).guardarSugerencia(globalUser.id, globalUser.nombre, globalUser.pais, msj);
-    }
-    function renderBuzon(lista) {
-      var cont = document.getElementById('buzonAdmin'); if (!lista || lista.length === 0) { cont.innerHTML = "<div class='text-center text-muted small py-3 fst-italic'>Bandeja limpia.</div>"; return; }
-      cont.innerHTML = lista.map(s => `<div class="card p-3 rounded-4 border-0 shadow-sm mb-3" id="sug-${s.fila}"><div class="d-flex justify-content-between mb-2"><div><span class="badge bg-dark mb-1">${s.pais}</span><div class="fw-bold" style="font-size:0.75rem;">${s.nom}</div></div></div><div class="text-dark mb-2 small bg-light p-2 rounded">${s.msj}</div><textarea id="reply-${s.fila}" class="form-control mb-2 small" placeholder="Respuesta..."></textarea><button class="btn btn-sm btn-success rounded-pill w-100" onclick="checkSugerencia(${s.fila})">Responder</button></div>`).join('');
-    }
-    function checkSugerencia(fila) {
-      var txt = document.getElementById('reply-' + fila).value.trim(); if(!txt) return; var card = document.getElementById('sug-' + fila); if(card) card.style.opacity = '0.4';
-      google.script.run.withSuccessHandler(function() { if(card) card.remove(); showToast("✅ Resuelto"); }).resolverSugerencia(fila, txt);
-    }
-    function filterGestion() {
-      var input = document.getElementById('adminSearch').value.toUpperCase(), rows = document.getElementById('gestionTableBody').getElementsByTagName('tr');
-      for (var i = 0; i < rows.length; i++) rows[i].style.display = rows[i].textContent.toUpperCase().indexOf(input) > -1 ? "" : "none";
-    }
-    function changeTab(t) { hideSubs(); document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active-section')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); var sec = document.getElementById('sec-' + t); if(sec) sec.classList.add('active-section'); var btn = document.getElementById('btn-' + t); if(btn) btn.classList.add('active'); window.scrollTo(0,0); }
-    function showSub(sub) { hideSubs(); document.getElementById('sub-' + sub).classList.remove('d-none'); window.scrollBy({ top: 300, behavior: 'smooth' }); }
-    function hideSubs() { ['sub-evolucion', 'sub-bonos', 'sub-horarios', 'sub-recursos', 'sub-sugerencias', 'sub-misconsultas'].forEach(id => { var el = document.getElementById(id); if(el) el.classList.add('d-none'); }); }
-    function toggleDefect() { document.getElementById('defectDetails').classList.toggle('d-none'); }
-
-    // ACTIVACIÓN DE NOTIFICACIONES
+  <script>
+    // NOTIFICACIONES
     function solicitarPermisoNotificacion() {
       window.OneSignalDeferred.push(async function(OneSignal) {
         try {
@@ -1182,7 +215,7 @@
       }
     }
 
-    // PWA INSTALLATION LOGIC
+    // PWA INSTALL LOGIC
     let deferredPrompt = null;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
@@ -1216,6 +249,6 @@
     function cerrarModalPWA() {
       document.getElementById('pwaModal').style.display = 'none';
     }
-</script>
+  </script>
 </body>
 </html>
