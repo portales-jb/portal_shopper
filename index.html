@@ -26,6 +26,9 @@
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "ecd72043-8857-49fa-8faf-522848a63e35",
+        allowLocalhostAsSecureOrigin: true,
+        serviceWorkerPath: "OneSignalSDKWorker.js",
+        serviceWorkerParam: { scope: "/" },
         slidedown: {
           enabled: true,
           autoPrompt: true
@@ -160,25 +163,6 @@
 
     function cerrarModalPWA() {
       document.getElementById('pwaModal').style.display = 'none';
-    }
-
-    // Registro del Service Worker con toma de control inmediata sin pantallas intermedias
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js').then((registration) => {
-          if (registration.waiting) {
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
-      });
-
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
     }
   </script>
 </body>
