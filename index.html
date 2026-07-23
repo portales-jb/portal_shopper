@@ -13,7 +13,34 @@
         await OneSignal.init({
           appId: "ecd72043-8857-49fa-8faf-522848a63e35",
         });
+
+        // Verificar el estado de la suscripción al cargar la página
+        actualizarEstadoNotificaciones(OneSignal);
+
+        // Escuchar si el usuario otorga el permiso en tiempo real
+        OneSignal.Notifications.addEventListener('permissionChange', function(permission) {
+          actualizarEstadoNotificaciones(OneSignal);
+        });
       });
+
+      function actualizarEstadoNotificaciones(OneSignal) {
+        const statusText = document.getElementById('status-text');
+        const btn = document.getElementById('btn-notif');
+        const isEnabled = OneSignal.Notifications.permission;
+
+        if (isEnabled) {
+          if (btn) {
+            btn.style.backgroundColor = '#28a745'; // Cambia el botón a verde
+            btn.innerText = '✓ Notificaciones Activas';
+            btn.disabled = true; // Deshabilita el botón porque ya está activo
+            btn.style.cursor = 'default';
+          }
+          if (statusText) {
+            statusText.innerText = 'Ya estás recibiendo alertas y actualizaciones en tiempo real.';
+            statusText.style.color = '#28a745';
+          }
+        }
+      }
     </script>
 
     <style>
@@ -73,8 +100,9 @@
             background-color: #e03816;
         }
 
-        .btn:active {
-            transform: scale(0.98);
+        .btn:disabled {
+            background-color: #28a745 !important;
+            opacity: 1;
         }
 
         .status {
@@ -91,7 +119,7 @@
         <h2>Portal Shopper</h2>
         <p>Activa las notificaciones push para recibir alertas de nuevos pedidos y actualizaciones importantes en tiempo real.</p>
         
-        <button class="btn" onclick="solicitarPermiso()">Activar Notificaciones</button>
+        <button id="btn-notif" class="btn" onclick="solicitarPermiso()">Activar Notificaciones</button>
         
         <div id="status-text" class="status">Pulsa el botón para suscribirte</div>
     </div>
@@ -101,15 +129,15 @@
             const statusText = document.getElementById('status-text');
             
             try {
-                // Solicitar permiso directamente con el SDK de OneSignal
                 await OneSignalDeferred.push(async function(OneSignal) {
                     await OneSignal.Notifications.requestPermission();
+                    actualizarEstadoNotificaciones(OneSignal);
                 });
-
-                statusText.innerText = "Suscripción procesada. ¡Verifica el panel!";
             } catch (error) {
                 console.error("Error al activar notificaciones:", error);
-                statusText.innerText = "Hubo un problema al solicitar el permiso.";
+                if (statusText) {
+                    statusText.innerText = "Hubo un problema al solicitar el permiso.";
+                }
             }
         }
     </script>
