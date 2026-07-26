@@ -1,6 +1,6 @@
 {
   "name": "Portal Shopper Pro",
-  "short_name": "Soy Shopper",
+  "short_name": "Portal Shopper",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#001f3f",
