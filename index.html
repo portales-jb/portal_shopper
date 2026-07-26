@@ -34,11 +34,11 @@
         }
       });
 
-      // 1. Verificar estado inicial al cargar la página
+      // 1. Verificar estado inicial
       const isSubscribed = OneSignal.User.PushSubscription.optedIn;
       actualizarEstadoNotificaciones(isSubscribed);
 
-      // 2. Escuchar cambios de estado en tiempo real
+      // 2. Escuchar cambios de estado
       OneSignal.User.PushSubscription.addEventListener("change", function(event) {
         if (event.current && event.current.optedIn) {
           actualizarEstadoNotificaciones(true);
@@ -71,6 +71,26 @@
       left: 0;
       right: 0;
       bottom: 50px;
+      z-index: 1;
+    }
+
+    /* PANTALLA DE CARGA (SPINNER) */
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: calc(100% - 50px);
+      background-color: #001f3f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      color: #ffffff;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
     }
 
     /* BARRA INFERIOR DE ACTIVACIÓN PUSH */
@@ -148,12 +168,25 @@
 </head>
 <body>
 
-  <!-- TU WEBAPP DE GOOGLE APPS SCRIPT DENTRO DEL IFRAME -->
+  <!-- PANTALLA DE CARGA -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-border text-light mb-3" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <h6 class="fw-bold">Cargando Portal Shopper...</h6>
+    <p class="small text-white-50 text-center px-4" id="txtXiaomiHelp" style="display: none;">
+      ¿Tarda en cargar? <a href="#" onclick="recargarIframe()" class="text-warning text-decoration-underline">Toca aquí para reintentar</a>
+    </p>
+  </div>
+
+  <!-- IFRAME CORREGIDO PARA EVITAR ERROR 403 Y BLOQUEOS DE GOOGLE -->
   <iframe 
+    id="mainFrame"
     class="app-frame"
     src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
-    allow="camera; microphone; geolocation; autoplay; fullscreen"
-    sandbox="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation">
+    allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write"
+    referrerpolicy="no-referrer-when-downgrade"
+    onload="ocultarLoader()">
   </iframe>
 
   <!-- BARRA INFERIOR -->
@@ -166,7 +199,7 @@
     </button>
   </div>
 
-  <!-- POP-UP PARA INSTALACIÓN -->
+  <!-- POP-UP PARA INSTALACIÓN PWA -->
   <div id="pwaModal" class="pwa-overlay">
     <div class="pwa-card">
       <img src="icon-192.png" width="75" height="75" class="rounded-4 mb-3 shadow-sm" alt="Logo">
@@ -186,6 +219,30 @@
   </div>
 
   <script>
+    // CONTROL DEL IFRAME Y PANTALLA DE CARGA (SOLUCIÓN XIAOMI/REDMI)
+    const loader = document.getElementById('loadingOverlay');
+    const iframe = document.getElementById('mainFrame');
+    const txtHelp = document.getElementById('txtXiaomiHelp');
+
+    function ocultarLoader() {
+      if (loader) {
+        loader.classList.add('hidden');
+      }
+    }
+
+    // Si tarda más de 5 segundos (común en Redmi/Xiaomi), mostrar ayuda
+    setTimeout(() => {
+      if (!loader.classList.contains('hidden')) {
+        txtHelp.style.display = 'block';
+      }
+    }, 5000);
+
+    function recargarIframe() {
+      if (iframe) {
+        iframe.src = iframe.src;
+      }
+    }
+
     // NOTIFICACIONES
     function solicitarPermisoNotificacion() {
       window.OneSignalDeferred.push(async function(OneSignal) {
