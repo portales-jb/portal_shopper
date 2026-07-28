@@ -223,6 +223,7 @@
     const loader = document.getElementById('loadingOverlay');
     const iframe = document.getElementById('mainFrame');
     const txtHelp = document.getElementById('txtXiaomiHelp');
+    const BASE_URL = "https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec";
 
     function ocultarLoader() {
       if (loader) {
@@ -232,14 +233,21 @@
 
     // Si tarda más de 5 segundos (común en Redmi/Xiaomi), mostrar ayuda
     setTimeout(() => {
-      if (!loader.classList.contains('hidden')) {
+      if (loader && !loader.classList.contains('hidden')) {
         txtHelp.style.display = 'block';
       }
     }, 5000);
 
+    // FUNCIÓN MEJORADA: Forzar recarga evitando la caché en Redmi/Xiaomi
     function recargarIframe() {
       if (iframe) {
-        iframe.src = iframe.src;
+        if (loader) {
+          loader.classList.remove('hidden');
+          txtHelp.style.display = 'none';
+        }
+        // Se agrega parámetro de timestamp para obligar al navegador a recargar el iFrame desde la red
+        const timestamp = new Date().getTime();
+        iframe.src = BASE_URL + "?v=" + timestamp;
       }
     }
 
