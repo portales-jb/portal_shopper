@@ -175,19 +175,12 @@
     </div>
     <h6 class="fw-bold">Cargando Portal Shopper...</h6>
     <p class="small text-white-50 text-center px-4" id="txtXiaomiHelp" style="display: none;">
-      ¿Tarda en cargar? <a href="#" onclick="recargarIframe()" class="text-warning text-decoration-underline">Toca aquí para reintentar</a>
+      ¿Tarda en cargar? <a href="javascript:void(0)" onclick="recargarIframe()" class="text-warning text-decoration-underline">Toca aquí para reintentar</a>
     </p>
   </div>
 
-  <!-- IFRAME CORREGIDO PARA EVITAR ERROR 403 Y BLOQUEOS DE GOOGLE -->
-  <iframe 
-    id="mainFrame"
-    class="app-frame"
-    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
-    allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write"
-    referrerpolicy="no-referrer-when-downgrade"
-    onload="ocultarLoader()">
-  </iframe>
+  <!-- IFRAME CONSTRUCCIÓN DINÁMICA -->
+  <div id="iframeContainer" style="width:100%; height:calc(100% - 50px);"></div>
 
   <!-- BARRA INFERIOR -->
   <div class="notification-bar">
@@ -219,11 +212,9 @@
   </div>
 
   <script>
-    // CONTROL DEL IFRAME Y PANTALLA DE CARGA (SOLUCIÓN XIAOMI/REDMI & GOOGLE 401)
-    const loader = document.getElementById('loadingOverlay');
-    const iframe = document.getElementById('mainFrame');
-    const txtHelp = document.getElementById('txtXiaomiHelp');
     const BASE_URL = "https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec";
+    const loader = document.getElementById('loadingOverlay');
+    const txtHelp = document.getElementById('txtXiaomiHelp');
 
     function ocultarLoader() {
       if (loader) {
@@ -231,30 +222,42 @@
       }
     }
 
-    // Si tarda más de 5 segundos (común en Redmi/Xiaomi), mostrar ayuda
+    // Inicializar iFrame en el DOM dinámicamente para evitar bloqueos de cache
+    function crearIframe() {
+      const container = document.getElementById('iframeContainer');
+      container.innerHTML = ''; // Limpia iFrame anterior si existía
+
+      const newIframe = document.createElement('iframe');
+      newIframe.id = 'mainFrame';
+      newIframe.className = 'app-frame';
+      newIframe.allow = "camera; microphone; geolocation; autoplay; fullscreen; clipboard-write";
+      newIframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+      newIframe.onload = ocultarLoader;
+      newIframe.src = BASE_URL;
+
+      container.appendChild(newIframe);
+    }
+
+    // Mostrar mensaje tras 5 segundos
     setTimeout(() => {
       if (loader && !loader.classList.contains('hidden')) {
         txtHelp.style.display = 'block';
       }
     }, 5000);
 
-    // FUNCIÓN CORREGIDA: Forzar recarga limpia en Redmi eliminando parámetros inválidos que provocaban Error 401
+    // RECARGA DE PWA: Fuerza recarga completa de la ventana si el iFrame falla
     function recargarIframe() {
-      if (iframe) {
-        if (loader) {
-          loader.classList.remove('hidden');
-          txtHelp.style.display = 'none';
-        }
-        
-        // 1. Limpiamos temporalmente el origen del iframe para forzar la liberación de memoria en Redmi/Xiaomi
-        iframe.src = "about:blank";
-        
-        // 2. Volvemos a asignar la URL limpia de Google Apps Script tras un breve instante
-        setTimeout(() => {
-          iframe.src = BASE_URL;
-        }, 150);
+      if (loader) {
+        loader.classList.remove('hidden');
+        txtHelp.style.display = 'none';
       }
+      
+      // Forzar recarga de la aplicación web
+      window.location.reload(true);
     }
+
+    // Ejecutar al cargar pantalla
+    window.addEventListener('DOMContentLoaded', crearIframe);
 
     // NOTIFICACIONES
     function solicitarPermisoNotificacion() {
