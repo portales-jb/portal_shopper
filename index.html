@@ -219,7 +219,7 @@
   </div>
 
   <script>
-    // CONTROL DEL IFRAME Y PANTALLA DE CARGA (SOLUCIÓN XIAOMI/REDMI)
+    // CONTROL DEL IFRAME Y PANTALLA DE CARGA (SOLUCIÓN XIAOMI/REDMI & GOOGLE 401)
     const loader = document.getElementById('loadingOverlay');
     const iframe = document.getElementById('mainFrame');
     const txtHelp = document.getElementById('txtXiaomiHelp');
@@ -238,16 +238,21 @@
       }
     }, 5000);
 
-    // FUNCIÓN MEJORADA: Forzar recarga evitando la caché en Redmi/Xiaomi
+    // FUNCIÓN CORREGIDA: Forzar recarga limpia en Redmi eliminando parámetros inválidos que provocaban Error 401
     function recargarIframe() {
       if (iframe) {
         if (loader) {
           loader.classList.remove('hidden');
           txtHelp.style.display = 'none';
         }
-        // Se agrega parámetro de timestamp para obligar al navegador a recargar el iFrame desde la red
-        const timestamp = new Date().getTime();
-        iframe.src = BASE_URL + "?v=" + timestamp;
+        
+        // 1. Limpiamos temporalmente el origen del iframe para forzar la liberación de memoria en Redmi/Xiaomi
+        iframe.src = "about:blank";
+        
+        // 2. Volvemos a asignar la URL limpia de Google Apps Script tras un breve instante
+        setTimeout(() => {
+          iframe.src = BASE_URL;
+        }, 150);
       }
     }
 
