@@ -91,6 +91,7 @@
     .loading-overlay.hidden {
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
     }
 
     /* BARRA INFERIOR DE ACTIVACIÓN PUSH */
@@ -174,13 +175,26 @@
       <span class="visually-hidden">Cargando...</span>
     </div>
     <h6 class="fw-bold">Cargando Portal Shopper...</h6>
-    <p class="small text-white-50 text-center px-4" id="txtXiaomiHelp" style="display: none;">
-      ¿Tarda en cargar? <a href="javascript:void(0)" onclick="recargarIframe()" class="text-warning text-decoration-underline">Toca aquí para reintentar</a>
-    </p>
+    <div id="txtXiaomiHelp" class="text-center px-4 mt-2" style="display: none;">
+      <p class="small text-white-50 mb-2">¿Problemas para cargar en este dispositivo?</p>
+      <button onclick="recargarIframe()" class="btn btn-sm btn-outline-light me-1 mb-2">
+        <i class="fa-solid fa-rotate-right me-1"></i> Reintentar
+      </button>
+      <button onclick="abrirDirecto()" class="btn btn-sm btn-warning mb-2">
+        <i class="fa-solid fa-up-right-from-square me-1"></i> Abrir Portal Directo
+      </button>
+    </div>
   </div>
 
-  <!-- IFRAME CONSTRUCCIÓN DINÁMICA -->
-  <div id="iframeContainer" style="width:100%; height:calc(100% - 50px);"></div>
+  <!-- IFRAME -->
+  <iframe 
+    id="mainFrame"
+    class="app-frame"
+    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
+    allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write"
+    referrerpolicy="no-referrer-when-downgrade"
+    onload="ocultarLoader()">
+  </iframe>
 
   <!-- BARRA INFERIOR -->
   <div class="notification-bar">
@@ -214,6 +228,7 @@
   <script>
     const BASE_URL = "https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec";
     const loader = document.getElementById('loadingOverlay');
+    const iframe = document.getElementById('mainFrame');
     const txtHelp = document.getElementById('txtXiaomiHelp');
 
     function ocultarLoader() {
@@ -222,42 +237,35 @@
       }
     }
 
-    // Inicializar iFrame en el DOM dinámicamente para evitar bloqueos de cache
-    function crearIframe() {
-      const container = document.getElementById('iframeContainer');
-      container.innerHTML = ''; // Limpia iFrame anterior si existía
-
-      const newIframe = document.createElement('iframe');
-      newIframe.id = 'mainFrame';
-      newIframe.className = 'app-frame';
-      newIframe.allow = "camera; microphone; geolocation; autoplay; fullscreen; clipboard-write";
-      newIframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
-      newIframe.onload = ocultarLoader;
-      newIframe.src = BASE_URL;
-
-      container.appendChild(newIframe);
-    }
-
-    // Mostrar mensaje tras 5 segundos
+    // CONTROL DE SEGURIDAD PARA REDMI / XIAOMI:
+    // Si pasados 4 segundos el iFrame no ha disparado onload, mostramos las opciones de ayuda
     setTimeout(() => {
       if (loader && !loader.classList.contains('hidden')) {
         txtHelp.style.display = 'block';
       }
-    }, 5000);
+    }, 4000);
 
-    // RECARGA DE PWA: Fuerza recarga completa de la ventana si el iFrame falla
-    function recargarIframe() {
-      if (loader) {
-        loader.classList.remove('hidden');
-        txtHelp.style.display = 'none';
+    // Si pasados 8 segundos no carga, quitamos el fondo azul automáticamente para mostrar el iFrame por si logró renderizar sin evento onload
+    setTimeout(() => {
+      if (loader && !loader.classList.contains('hidden')) {
+        ocultarLoader();
       }
-      
-      // Forzar recarga de la aplicación web
-      window.location.reload(true);
+    }, 8000);
+
+    function recargarIframe() {
+      if (iframe) {
+        if (loader) {
+          loader.classList.remove('hidden');
+          txtHelp.style.display = 'none';
+        }
+        iframe.src = BASE_URL;
+      }
     }
 
-    // Ejecutar al cargar pantalla
-    window.addEventListener('DOMContentLoaded', crearIframe);
+    // Solución para bloqueos extremos de MIUI/HyperOS: Abrir enlace directo a Apps Script
+    function abrirDirecto() {
+      window.location.href = BASE_URL;
+    }
 
     // NOTIFICACIONES
     function solicitarPermisoNotificacion() {
