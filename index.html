@@ -186,13 +186,13 @@
     </div>
   </div>
 
-  <!-- IFRAME -->
+  <!-- IFRAME CON PARÁMETROS CORREGIDOS -->
   <iframe 
     id="mainFrame"
     class="app-frame"
-    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
+    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec?embedded=true" 
     allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write"
-    referrerpolicy="no-referrer-when-downgrade"
+    referrerpolicy="strict-origin-when-cross-origin"
     onload="ocultarLoader()">
   </iframe>
 
@@ -226,7 +226,7 @@
   </div>
 
   <script>
-    const BASE_URL = "https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec";
+    const BASE_URL = "https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec?embedded=true";
     const loader = document.getElementById('loadingOverlay');
     const iframe = document.getElementById('mainFrame');
     const txtHelp = document.getElementById('txtXiaomiHelp');
@@ -238,14 +238,12 @@
     }
 
     // CONTROL DE SEGURIDAD PARA REDMI / XIAOMI:
-    // Si pasados 4 segundos el iFrame no ha disparado onload, mostramos las opciones de ayuda
     setTimeout(() => {
       if (loader && !loader.classList.contains('hidden')) {
         txtHelp.style.display = 'block';
       }
     }, 4000);
 
-    // Si pasados 8 segundos no carga, quitamos el fondo azul automáticamente para mostrar el iFrame por si logró renderizar sin evento onload
     setTimeout(() => {
       if (loader && !loader.classList.contains('hidden')) {
         ocultarLoader();
@@ -258,11 +256,11 @@
           loader.classList.remove('hidden');
           txtHelp.style.display = 'none';
         }
-        iframe.src = BASE_URL;
+        // Agregamos un timestamp para limpiar la caché del navegador móvil
+        iframe.src = BASE_URL + "&t=" + new Date().getTime();
       }
     }
 
-    // Solución para bloqueos extremos de MIUI/HyperOS: Abrir enlace directo a Apps Script
     function abrirDirecto() {
       window.location.href = BASE_URL;
     }
