@@ -251,15 +251,15 @@
     }, 8000);
 
     function recargarIframe() {
-      if (iframe) {
-        if (loader) {
-          loader.classList.remove('hidden');
-          txtHelp.style.display = 'none';
-        }
-        // Agregamos un timestamp para limpiar la caché del navegador móvil
-        iframe.src = BASE_URL + "&t=" + new Date().getTime();
-      }
+  if (iframe) {
+    if (loader) {
+      loader.classList.remove('hidden');
+      if (txtHelp) txtHelp.style.display = 'none';
     }
+    var timestamp = new Date().getTime();
+    iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + "nocache=" + timestamp;
+  }
+}
 
     function abrirDirecto() {
       window.location.href = BASE_URL;
