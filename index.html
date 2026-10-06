@@ -34,11 +34,9 @@
         }
       });
 
-      // 1. Verificar estado inicial
       const isSubscribed = OneSignal.User.PushSubscription.optedIn;
       actualizarEstadoNotificaciones(isSubscribed);
 
-      // 2. Escuchar cambios de estado
       OneSignal.User.PushSubscription.addEventListener("change", function(event) {
         if (event.current && event.current.optedIn) {
           actualizarEstadoNotificaciones(true);
@@ -60,21 +58,8 @@
       background-color: #001f3f;
       font-family: system-ui, -apple-system, sans-serif;
     }
-    
-    .app-frame {
-      width: 100%;
-      height: calc(100% - 50px);
-      border: none;
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 50px;
-      z-index: 1;
-    }
 
-    /* PANTALLA DE CARGA (SPINNER) */
+    /* PANTALLA DE CARGA / TRANSICIÓN */
     .loading-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: calc(100% - 50px);
@@ -85,13 +70,8 @@
       justify-content: center;
       z-index: 2;
       color: #ffffff;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
-    }
-
-    .loading-overlay.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      text-align: center;
+      padding: 20px;
     }
 
     /* BARRA INFERIOR DE ACTIVACIÓN PUSH */
@@ -131,8 +111,7 @@
       box-shadow: 0 4px 12px rgba(25, 135, 84, 0.4);
     }
     
-    /* MODAL INSTALACIÓN PWA */
-/* MODAL INSTALACIÓN PWA (OPTIMIZADO PARA MEMORIA RAM) */
+    /* MODAL INSTALACIÓN PWA (OPTIMIZADO PARA MEMORIA RAM) */
     .pwa-overlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -174,27 +153,9 @@
     <div class="spinner-border text-light mb-3" role="status" style="width: 3rem; height: 3rem;">
       <span class="visually-hidden">Cargando...</span>
     </div>
-    <h6 class="fw-bold">Cargando Portal Shopper...</h6>
-    <div id="txtXiaomiHelp" class="text-center px-4 mt-2" style="display: none;">
-      <p class="small text-white-50 mb-2">¿Problemas para cargar en este dispositivo?</p>
-      <button onclick="recargarIframe()" class="btn btn-sm btn-outline-light me-1 mb-2">
-        <i class="fa-solid fa-rotate-right me-1"></i> Reintentar
-      </button>
-      <button onclick="abrirDirecto()" class="btn btn-sm btn-warning mb-2">
-        <i class="fa-solid fa-up-right-from-square me-1"></i> Abrir Portal Directo
-      </button>
-    </div>
+    <h6 class="fw-bold mb-1">Iniciando Portal Shopper...</h6>
+    <p class="small text-white-50">Optimizando rendimiento...</p>
   </div>
-
-  <!-- IFRAME CON PARÁMETROS CORREGIDOS -->
-  <iframe 
-    id="mainFrame"
-    class="app-frame"
-    src="https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec" 
-    allow="camera; microphone; geolocation; autoplay; fullscreen; clipboard-write"
-    referrerpolicy="strict-origin-when-cross-origin"
-    onload="ocultarLoader()">
-  </iframe>
 
   <!-- BARRA INFERIOR -->
   <div class="notification-bar">
@@ -221,49 +182,18 @@
         <i class="fa-solid fa-arrow-up-from-bracket text-primary"></i> Toca <b>Compartir</b> en Safari y selecciona <b>"Agregar a inicio"</b>.
       </div>
 
-      <button class="btn btn-link text-muted btn-sm text-decoration-none mt-2" onclick="cerrarModalPWA()">Continuar en navegador</button>
+      <button class="btn btn-link text-muted btn-sm text-decoration-none mt-2" onclick="cerrarModalPWA()">Continuar</button>
     </div>
   </div>
 
   <script>
     const BASE_URL = "https://script.google.com/macros/s/AKfycbwjkr1xUt0tKydNE6Gsj0fd9JEy_uxl52YkiwtjKxtwC54MOLptgkjVX6WzeDkJtv4a/exec";
-    const loader = document.getElementById('loadingOverlay');
-    const iframe = document.getElementById('mainFrame');
-    const txtHelp = document.getElementById('txtXiaomiHelp');
 
-    function ocultarLoader() {
-      if (loader) {
-        loader.classList.add('hidden');
-      }
-    }
-
-    // CONTROL DE SEGURIDAD PARA REDMI / XIAOMI:
-    setTimeout(() => {
-      if (loader && !loader.classList.contains('hidden')) {
-        txtHelp.style.display = 'block';
-      }
-    }, 4000);
-
-    setTimeout(() => {
-      if (loader && !loader.classList.contains('hidden')) {
-        ocultarLoader();
-      }
-    }, 8000);
-
-    function recargarIframe() {
-  if (iframe) {
-    if (loader) {
-      loader.classList.remove('hidden');
-      if (txtHelp) txtHelp.style.display = 'none';
-    }
-    var timestamp = new Date().getTime();
-    iframe.src = BASE_URL + (BASE_URL.indexOf('?') > -1 ? '&' : '?') + "nocache=" + timestamp;
-  }
-}
-
-    function abrirDirecto() {
-      window.location.href = BASE_URL;
-    }
+    // REDIRECCIÓN OPTIMIZADA SIN IFRAME (Resuelve colapso de RAM en Motorola/Redmi)
+    setTimeout(function() {
+      var timestamp = new Date().getTime();
+      window.location.replace(BASE_URL + "?t=" + timestamp);
+    }, 600);
 
     // NOTIFICACIONES
     function solicitarPermisoNotificacion() {
@@ -316,10 +246,9 @@
       e.preventDefault();
       deferredPrompt = e;
       if (!isStandalone) {
-        // Da tiempo al procesador y RAM del celular para cargar el portal antes de mostrar el aviso
         setTimeout(() => {
           document.getElementById('pwaModal').style.display = 'flex';
-        }, 3500);
+        }, 2000);
       }
     });
 
